@@ -101,6 +101,25 @@ void printk(char* string, uint8_t format) {
     }
 }
 
+void print_uint(uint32_t num, uint8_t format) {
+    char *video_memory = (char *)0xb8000;
+    uint8_t digits[10];
+    for (int i = 0; i < 10; i++) {
+        digits[i] = num % 10;
+        num /= 10;
+    }
+    int j = 9;
+    while (digits[j] == 0) {
+        j--;
+    }
+    while (j >= 0) {
+        video_memory[next_char] = digits[j] + 48;
+        video_memory[next_char + 1] = format;
+        j--;
+        next_char += 2;
+    }
+}
+
 void _kmain(void)
 {
     __asm__ __volatile__(
