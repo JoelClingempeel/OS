@@ -14,6 +14,13 @@ uint32_t* pd_addr;
 uint32_t* pt_addr;
 uint8_t physical_memory_bitmap[NUM_FRAMES / 8];
 
+typedef struct free_list_node {
+    size_t size;
+    struct free_list_node *next;
+} free_list_node_t;
+uint8_t free_list_buffer[4096];
+free_list_node_t* free_list_start;
+
 uint8_t next_char = 0;
 
 uint32_t phys_alloc_frame(){
@@ -56,6 +63,33 @@ void map_page(uint32_t virt_addr, uint32_t flags) {
     cur_page_table[pt_offset] = frame_addr | flags;
 }
 
+uint32_t kmalloc(uint32_t num_bytes){
+    free_list_node_t* new_node;
+    free_list_node_t* prev_node = NULL;
+    free_list_node_t scratch_node;
+
+    free_list_node_t* node = (free_list_node_t*)free_list_start;
+    while (node != NULL) {
+        if (node->size >= num_bytes) {
+            // TODO Remove nodes when size reaches 0.
+            new_node = (free_list_node_t*)((uint8_t*)node + num_bytes + sizeof(free_list_node_t));
+            scratch_node = *node;
+            *new_node = scratch_node;
+            if (prev_node != NULL) {
+                prev_node->next = new_node;
+            } else {
+                free_list_start = new_node;
+            }
+            node->size = num_bytes;
+            new_node->size = scratch_node.size - num_bytes - sizeof(free_list_node_t);
+            return (uint32_t)(node) + sizeof(free_list_node_t);
+        }
+        prev_node = node;
+        node = node->next;
+    }
+    // TODO Allocate pages when needed.
+}
+
 void printk(char* string, uint8_t format) {
     char *video_memory = (char *)0xb8000;
     int i = 0;
@@ -70,15 +104,18 @@ void printk(char* string, uint8_t format) {
 void _kmain(void)
 {
     __asm__ __volatile__(
-        "movl %%cr3, %0\n" 
-        : "=r" (pd_addr) 
-        : 
-        : 
+        "movl %%cr3, %0\n"
+        : "=r" (pd_addr)
+        :
+        :
     );
     for (int i = 1; i < 1024; i++) {
         pd_addr[i] = i * 0x400000;
         pd_addr[i] |= FLAG_PRESENT | FLAG_RW | FLAG_PSE;
     }
+
+    free_list_start = (free_list_node_t*)free_list_buffer;
+    free_list_start->size = 4096 - sizeof(free_list_node_t);
 
     while (1) {
         asm("hlt"); 
