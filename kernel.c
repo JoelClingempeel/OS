@@ -14,6 +14,8 @@ uint32_t* pd_addr;
 uint32_t* pt_addr;
 uint8_t physical_memory_bitmap[NUM_FRAMES / 8];
 
+uint8_t next_char = 0;
+
 uint32_t phys_alloc_frame(){
     for (int i = 0; i < NUM_FRAMES / 8; i++) {
         for (int bit = 0; bit < 8; bit++) {
@@ -54,6 +56,17 @@ void map_page(uint32_t virt_addr, uint32_t flags) {
     cur_page_table[pt_offset] = frame_addr | flags;
 }
 
+void printk(char* string, uint8_t format) {
+    char *video_memory = (char *)0xb8000;
+    int i = 0;
+    while (string[i] != 0) {
+        video_memory[2 * next_char] = string[i];
+        video_memory[2 * next_char + 1] = format;
+        i++;
+        next_char++;
+    }
+}
+
 void _kmain(void)
 {
     __asm__ __volatile__(
@@ -67,21 +80,6 @@ void _kmain(void)
         pd_addr[i] |= FLAG_PRESENT | FLAG_RW | FLAG_PSE;
     }
 
-    char hello[] = "Hello world!";
-    char *video_memory = (char *)0xb8000;
-    int i = 0;
-    while (hello[i] != 0) {
-        video_memory[2*i] = hello[i];
-        video_memory[2*i+1] = 0x07;
-        i++;
-    }
-    while (i < 80) {
-        video_memory[2*i] = 0;
-        i++;
-    }
-
-    char *byte = (char *)(1<<22 - 1);
-    byte[0] = 'X';
     while (1) {
         asm("hlt"); 
     }
