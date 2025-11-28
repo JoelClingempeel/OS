@@ -23,15 +23,15 @@ SECTIONS {
     /* We don't need an explicit section here because the .text, .data, .bss 
        sections below will start writing at this current location counter address (0x7E00). */
 
-    .data : {           /* Initialized data */
+    .data 0x100000 : {           /* Initialized data */
         *(.data)
     }
 
-    .rodata : {         /* Read-only data (like your "Hello World" string) */
+    .rodata 0x100000 : {         /* Read-only data (like your "Hello World" string) */
         *(.rodata)
     }
 
-    .bss 0x10000 : {            /* Uninitialized data (PT and PD) */
+    .bss 0x100000 : {            /* Uninitialized data (PT and PD) */
         *(.bss)
     }
 
