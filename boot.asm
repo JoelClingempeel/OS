@@ -107,4 +107,4 @@ pd:
     RESB 4096
 ALIGN 4096
 pt:
-    RESB 4096
+    RESB 4096 * 10

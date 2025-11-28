@@ -31,7 +31,7 @@ SECTIONS {
         *(.rodata)
     }
 
-    .bss : {            /* Uninitialized data (PT and PD) */
+    .bss 0x10000 : {            /* Uninitialized data (PT and PD) */
         *(.bss)
     }
 
