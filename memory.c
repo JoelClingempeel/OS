@@ -1,5 +1,6 @@
 #include "memory.h"
 
+
 uint32_t* pd_addr;
 uint32_t* pt_addr;
 uint8_t physical_memory_bitmap[NUM_FRAMES / 8];
