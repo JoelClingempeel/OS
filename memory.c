@@ -57,7 +57,7 @@ void map_page(uint32_t virt_addr, uint32_t flags) {
 }
 
 void map_pages(uint32_t virt_addr, uint32_t num_pages, uint32_t flags) {
-    for (int i = 0; i < num_pages; i++) {
+    for (uint32_t i = 0; i < num_pages; i++) {
         map_page(virt_addr, flags);
     }
 }
