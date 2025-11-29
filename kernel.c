@@ -13,6 +13,7 @@
 uint32_t* pd_addr;
 uint32_t* pt_addr;
 uint8_t physical_memory_bitmap[NUM_FRAMES / 8];
+uint32_t vram_border = 0x400000;
 
 typedef struct free_list_node {
     size_t size;
@@ -23,7 +24,24 @@ free_list_node_t* free_list_start;
 
 uint8_t next_char = 0;
 
-uint32_t phys_alloc_frame(){
+void init_mem() {
+    __asm__ __volatile__(
+        "movl %%cr3, %0\n"
+        : "=r" (pd_addr)
+        :
+        :
+    );
+
+    for (int i = 1; i < 1024; i++) {
+        pd_addr[i] = i * 0x400000;
+        pd_addr[i] |= FLAG_PRESENT | FLAG_RW | FLAG_PSE;
+    }
+
+    free_list_start = (free_list_node_t*)free_list_buffer;
+    free_list_start->size = 4096 - sizeof(free_list_node_t);
+}
+
+uint32_t phys_alloc_frame() {
     for (int i = 0; i < NUM_FRAMES / 8; i++) {
         for (int bit = 0; bit < 8; bit++) {
             if(!(physical_memory_bitmap[i] & (1 << bit))) {
@@ -63,6 +81,12 @@ void map_page(uint32_t virt_addr, uint32_t flags) {
     cur_page_table[pt_offset] = frame_addr | flags;
 }
 
+void map_pages(uint32_t virt_addr, uint32_t num_pages, uint32_t flags) {
+    for (int i = 0; i < num_pages; i++) {
+        map_page(virt_addr, flags);
+    }
+}
+
 uint32_t kmalloc(uint32_t num_bytes){
     free_list_node_t* new_node;
     free_list_node_t* prev_node = NULL;
@@ -87,7 +111,19 @@ uint32_t kmalloc(uint32_t num_bytes){
         prev_node = node;
         node = node->next;
     }
-    // TODO Allocate pages when needed.
+    uint32_t total_needed_bytes = num_bytes + 2 * sizeof(free_list_node_t);
+    uint32_t num_pages = total_needed_bytes / PAGE_SIZE + 1;
+    uint32_t new_alloc_mem_start = vram_border;
+    uint32_t new_unalloc_mem_start = vram_border + num_bytes + sizeof(free_list_node_t);
+    map_pages(vram_border, FLAG_PRESENT | FLAG_RW, num_pages);
+    vram_border += num_pages * PAGE_SIZE;
+    free_list_node_t* new_unalloc_node = (free_list_node_t*)new_unalloc_mem_start;
+    prev_node->next = new_unalloc_node;
+    new_unalloc_node->size = num_pages * PAGE_SIZE - total_needed_bytes;
+    new_alloc_node->next = NULL;
+    free_list_node_t* new_alloc_node = (free_list_node_t*)new_alloc_mem_start;
+    new_alloc_node->size = num_bytes;
+    return new_alloc_mem_start + sizeof(free_list_node_t);
 }
 
 void printk(char* string, uint8_t format) {
@@ -122,19 +158,7 @@ void print_uint(uint32_t num, uint8_t format) {
 
 void _kmain(void)
 {
-    __asm__ __volatile__(
-        "movl %%cr3, %0\n"
-        : "=r" (pd_addr)
-        :
-        :
-    );
-    for (int i = 1; i < 1024; i++) {
-        pd_addr[i] = i * 0x400000;
-        pd_addr[i] |= FLAG_PRESENT | FLAG_RW | FLAG_PSE;
-    }
-
-    free_list_start = (free_list_node_t*)free_list_buffer;
-    free_list_start->size = 4096 - sizeof(free_list_node_t);
+    init_mem();
 
     while (1) {
         asm("hlt"); 
