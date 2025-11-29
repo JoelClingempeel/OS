@@ -120,7 +120,7 @@ uint32_t kmalloc(uint32_t num_bytes){
     free_list_node_t* new_unalloc_node = (free_list_node_t*)new_unalloc_mem_start;
     prev_node->next = new_unalloc_node;
     new_unalloc_node->size = num_pages * PAGE_SIZE - total_needed_bytes;
-    new_alloc_node->next = NULL;
+    new_unalloc_node->next = NULL;
     free_list_node_t* new_alloc_node = (free_list_node_t*)new_alloc_mem_start;
     new_alloc_node->size = num_bytes;
     return new_alloc_mem_start + sizeof(free_list_node_t);
