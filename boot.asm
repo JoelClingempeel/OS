@@ -99,7 +99,22 @@ pt_fill_loop:
         
     jmp 0x08:paged_mode_start
 paged_mode_start:
+    mov esp, 0x7000  ; temp_stack_storage + 4096
+    mov ax, DATA_SEG
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
     call _kmain
+
+extern _idt80
+global handle_interrupt
+handle_interrupt:
+    pushad
+    call _idt80
+    popad
+    iretd 
 
 SECTION .bss
 ALIGN 4096
@@ -107,4 +122,10 @@ pd:
     RESB 4096
 ALIGN 4096
 pt:
-    RESB 4096 * 10
+    
+
+; Add the stack buffer after everything else
+KERNEL_STACK_SIZE equ 16384 
+KERNEL_STACK:
+    RESB KERNEL_STACK_SIZE 
+STACK_TOP: ; Use this label for 'mov esp, STACK_TOP'

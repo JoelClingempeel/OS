@@ -27,11 +27,11 @@ SECTIONS {
         *(.data)
     }
 
-    .rodata 0x100000 : {         /* Read-only data (like your "Hello World" string) */
+    .rodata 0x102000 : {         /* Read-only data (like your "Hello World" string) */
         *(.rodata)
     }
 
-    .bss 0x100000 : {            /* Uninitialized data (PT and PD) */
+    .bss 0x104000 : {            /* Uninitialized data (PT and PD) */
         *(.bss)
     }
 
