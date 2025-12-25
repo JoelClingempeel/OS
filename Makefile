@@ -1,4 +1,3 @@
-
 CC = x86_64-elf-gcc
 LD = x86_64-elf-ld
 NASM = nasm
@@ -7,12 +6,11 @@ OBJCOPY = x86_64-elf-objcopy
 TARGET_ELF = kernel.elf
 TARGET_BIN = kernel.bin
 ASM_SRC = boot.asm
-# C_SRCS = kernel.c utils.c
 C_SRCS = kernel.c memory.c utils.c
 
 OBJ_FILES = $(ASM_SRC:.asm=.o) $(C_SRCS:.c=.o)
 
-CFLAGS = -m32 -ffreestanding -c -Wall -Wextra -nostdlib
+CFLAGS = -m32 -ffreestanding -c -Wall -Wextra -nostdlib -mno-sse -mno-sse2
 
 LDFLAGS = -m elf_i386 -T link.ld -nostdlib
 

@@ -2,9 +2,6 @@
 #include "utils.h"
 
 
-char temp_stack_storage[4096]; // A 4KB stack should be enough
-extern char temp_stack_storage[];
-
 struct IDTEntry {
     uint16_t offset_low;
     uint16_t selector;
@@ -13,8 +10,7 @@ struct IDTEntry {
     uint16_t offset_high;
 } __attribute__((packed));
 
-struct IDTEntry idt[256];
-
+int x;
 struct IDTEntry idt[256];
 
 struct IDTPointer {
@@ -25,7 +21,9 @@ struct IDTPointer {
 extern void handle_interrupt(void);
 
 void _idt80 (void) {
-    char hello[] = "test string";
+    // char hello[] = "test string";
+    // printk(hello, 0x07);
+    char hello[] = "ABCDEFGHIJKLMNOAAAAAAAAAAAABB";
     printk(hello, 0x07);
 }
 

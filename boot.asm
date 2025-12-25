@@ -1,6 +1,5 @@
 bits 16
-SECTION .text
-
+SECTION .text.stage1
 stage1_start:
     mov ah, 0x02       ; BIOS read disk function
     mov al, 0x63       ; Read 99 sectors.
@@ -19,6 +18,7 @@ stage1_start:
 times 510-($-stage1_start) db 0
 dw 0xAA55
 
+SECTION .text
 global stage2_entry
 stage2_entry:
 CODE_SEG equ GDT_code - GDT_start
@@ -99,7 +99,9 @@ pt_fill_loop:
         
     jmp 0x08:paged_mode_start
 paged_mode_start:
-    mov esp, 0x7000  ; temp_stack_storage + 4096
+    ; mov esp, 0x7000  ; temp_stack_storage + 4096
+    ; mov esp, STACK_TOP
+    mov esp, 0x40000
     mov ax, DATA_SEG
     mov ds, ax
     mov es, ax
@@ -122,6 +124,7 @@ pd:
     RESB 4096
 ALIGN 4096
 pt:
+    RESB 4096
     
 
 ; Add the stack buffer after everything else
