@@ -20,17 +20,12 @@ struct IDTPointer {
 
 extern void handle_interrupt(void);
 
-void _idt80 (void) {
-    // char hello[] = "test string";
-    // printk(hello, 0x07);
+void _idt80(void) {
     char hello[] = "ABCDEFGHIJKLMNOAAAAAAAAAAAABB";
     printk(hello, 0x07);
 }
 
-void _kmain(void)
-{
-    init_mem();
-
+struct IDTPointer init_idt() {
     struct IDTEntry* entry = &idt[0x80];
     uint32_t idt80_addr = (uint32_t)(&handle_interrupt);
     entry->offset_low = idt80_addr & 0xFFFF;
@@ -42,6 +37,14 @@ void _kmain(void)
     struct IDTPointer idt_ptr;
     idt_ptr.limit = (sizeof(struct IDTEntry) * 256) - 1;
     idt_ptr.base = (uint32_t)&idt;
+    return idt_ptr;
+}
+
+void _kmain(void)
+{
+    init_mem();
+
+    struct IDTPointer idt_ptr = init_idt();
 
     asm volatile("lidt %0" : : "m" (idt_ptr));
     asm volatile ("int $0x80"); 
