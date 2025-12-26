@@ -145,9 +145,29 @@ handle_interrupt:
 extern _idt_timer
 global handle_timer_int
 handle_timer_int:
-    pushad
+    ; 1. Save all general purpose registers
+    pushad 
+    ; 2. Save the original Data Segment (which is 0x23 if coming from Userland)
+    mov ax, ds
+    push eax
+    ; 3. Load the Kernel Data Segment (0x10)
+    ; This ensures C code can actually access kernel memory/variables
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    ; 4. Call the C handler
     call _idt_timer
+    ; 5. Restore the original Data Segment (0x23)
+    pop eax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    ; 6. Restore general purpose registers
     popad
+    ; 7. Return to whatever Ring we came from
     iretd
 
 extern _idt_double_fault

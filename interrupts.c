@@ -63,7 +63,8 @@ void _idt80(void) {
 
 void _idt_timer(void) {
     char *video_memory = (char *)0xb8000;
-    video_memory[0] = 'T';
+    video_memory[0x30] = 'T';
+    video_memory[0x31] = 0xc;
 }
 
 void _idt_double_fault(uint32_t error_code) {
@@ -112,6 +113,6 @@ void configure_interrupts() {
     struct IDTPointer idt_ptr = init_idt();
     pic_remap(0x20, 0x28);
     asm volatile("lidt %0" : : "m" (idt_ptr));
-    // outb(0x21, 0xFE);  // Unmask IRQ 0 (Timer) only
-    // asm volatile("sti");
+    outb(0x21, 0xFE);  // Unmask IRQ 0 (Timer) only
+    asm volatile("sti");
 }

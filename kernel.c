@@ -64,8 +64,7 @@ void user_test_program() {
     video_memory[0] = 'U';
     video_memory[1] = 0x0a; // Green color
 
-    // Uncomment to trigger GPF:
-    // __asm__ volatile("mov %cr0, %eax");
+    __asm__ volatile("mov %cr0, %eax");  // Trigger GPF
 
     while(1) {}
 }
@@ -79,8 +78,7 @@ void _kmain(void)
 
     init_tss();
 
-    // Uncomment to test software interrupt:
-    // asm volatile ("int $0x80");
+    // asm volatile ("int $0x80");  // Software interrupt
 
     jump_to_userland((uint32_t)user_test_program);
 
