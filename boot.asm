@@ -116,7 +116,15 @@ handle_interrupt:
     pushad
     call _idt80
     popad
-    iretd 
+    iretd
+
+extern _idt_timer
+global handle_timer_int
+handle_timer_int:
+    pushad
+    call _idt_timer
+    popad
+    iretd
 
 SECTION .bss
 ALIGN 4096
