@@ -57,8 +57,8 @@ struct IDTPointer init_idt() {
 }
 
 void _idt80(void) {
-    char hello[] = "AAAAA";
-    printk(hello, 0x07);
+    char test_string[] = "AAAAA";
+    printk(test_string);
 }
 
 void _idt_timer(void) {
@@ -67,18 +67,18 @@ void _idt_timer(void) {
 }
 
 void _idt_double_fault(uint32_t error_code) {
-    printk("     Double fault", 0x07);
-    print_uint(error_code, 0x07);
+    printk("     Double fault");
+    print_uint(error_code);
 }
 
 void _idt_gpf(uint32_t error_code) {
-    printk("     GPF", 0x07);
-    print_uint(error_code, 0x07);
+    printk("     GPF");
+    print_uint(error_code);
 }
 
 void _idt_page_fault(uint32_t error_code) {
-    printk("     Page fault", 0x07);
-    print_uint(error_code, 0x07);
+    printk("     Page fault");
+    print_uint(error_code);
 }
 
 void pic_remap(int offset1, int offset2) {

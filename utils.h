@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define TEXT_FORMAT_BYTE 0x07 
+
 
 extern uint8_t next_char;
 
@@ -11,9 +13,9 @@ extern uint8_t next_char;
 void* memcpy(void* dest, const void* src, size_t count);
 
 // Print a string.
-void printk(char* string, uint8_t format);
+void printk(char* string);
 
 // Print an unsigned integer.
-void print_uint(uint32_t num, uint8_t format);
+void print_uint(uint32_t num);
 
 #endif  // UTILS_H
