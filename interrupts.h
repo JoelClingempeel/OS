@@ -15,6 +15,9 @@ struct IDTPointer {
 
 extern void handle_interrupt(void);
 extern void handle_timer_int(void);
+extern void handle_double_fault(void);
+extern void handle_gpf(void);
+extern void handle_page_fault(void);
 
 static inline uint8_t inb(uint16_t port) {
     uint8_t ret;
@@ -31,6 +34,12 @@ struct IDTPointer init_idt();
 void _idt80(void);
 
 void _idt_timer(void);
+
+void _idt_double_fault(uint32_t error_code);
+
+void _idt_gpf(uint32_t error_code);
+
+void _idt_page_fault(uint32_t error_code);
 
 void pic_remap(int offset1, int offset2);
 

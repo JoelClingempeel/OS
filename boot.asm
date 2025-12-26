@@ -126,6 +126,39 @@ handle_timer_int:
     popad
     iretd
 
+extern _idt_double_fault
+global handle_double_fault
+handle_double_fault:
+    pushad
+    push dword [esp + 32]
+    call _idt_double_fault
+    add esp, 4
+    popad
+    add esp, 4
+    iretd
+
+extern _idt_gpf
+global handle_gpf
+handle_gpf:
+    pushad
+    push dword [esp + 32]
+    call _idt_gpf
+    add esp, 4
+    popad
+    add esp, 4
+    iretd
+
+extern _idt_page_fault
+global handle_page_fault
+handle_page_fault:
+    pushad
+    push dword [esp + 32]
+    call _idt_page_fault
+    add esp, 4
+    popad
+    add esp, 4
+    iretd
+
 SECTION .bss
 ALIGN 4096
 pd:

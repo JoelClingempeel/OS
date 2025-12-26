@@ -1,4 +1,5 @@
 #include "interrupts.h"
+#include "utils.h"
 
 struct IDTEntry idt[256];
 
@@ -22,6 +23,33 @@ struct IDTPointer init_idt() {
     // 0x8E = 1 (Present) | 00 (Ring 0) | 01110 (32-bit Interrupt Gate)
     timer_entry->type_attr = 0x8E;
 
+    // --- Double Fault (Vector 8) ---
+    struct IDTEntry* df_entry = &idt[8];
+    uint32_t df_addr = (uint32_t)(&handle_double_fault);
+    df_entry->offset_low = df_addr & 0xFFFF;
+    df_entry->offset_high = df_addr >> 16;
+    df_entry->selector = 0x08;
+    df_entry->zero = 0;
+    df_entry->type_attr = 0x8E; 
+
+    // --- General Protection Fault (Vector 13) ---
+    struct IDTEntry* gpf_entry = &idt[13];
+    uint32_t gpf_addr = (uint32_t)(&handle_gpf);
+    gpf_entry->offset_low = gpf_addr & 0xFFFF;
+    gpf_entry->offset_high = gpf_addr >> 16;
+    gpf_entry->selector = 0x08;
+    gpf_entry->zero = 0;
+    gpf_entry->type_attr = 0x8E;
+
+    // --- Page Fault (Vector 14) ---
+    struct IDTEntry* pf_entry = &idt[14];
+    uint32_t pf_addr = (uint32_t)(&handle_page_fault);
+    pf_entry->offset_low = pf_addr & 0xFFFF;
+    pf_entry->offset_high = pf_addr >> 16;
+    pf_entry->selector = 0x08;
+    pf_entry->zero = 0;
+    pf_entry->type_attr = 0x8E;
+
     struct IDTPointer idt_ptr;
     idt_ptr.limit = (sizeof(struct IDTEntry) * 256) - 1;
     idt_ptr.base = (uint32_t)&idt;
@@ -36,6 +64,21 @@ void _idt80(void) {
 void _idt_timer(void) {
     char *video_memory = (char *)0xb8000;
     video_memory[0] = 'T';
+}
+
+void _idt_double_fault(uint32_t error_code) {
+    printk("     Double fault", 0x07);
+    print_uint(error_code, 0x07);
+}
+
+void _idt_gpf(uint32_t error_code) {
+    printk("     GPF", 0x07);
+    print_uint(error_code, 0x07);
+}
+
+void _idt_page_fault(uint32_t error_code) {
+    printk("     Page fault", 0x07);
+    print_uint(error_code, 0x07);
 }
 
 void pic_remap(int offset1, int offset2) {
