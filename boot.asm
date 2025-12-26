@@ -30,7 +30,7 @@ mov eax, 1
 mov cr0, eax
 jmp CODE_SEG:start_protected_mode
 
-                                   
+global GDT_start
 GDT_start:
     GDT_null:
         dd 0x0
@@ -51,6 +51,30 @@ GDT_start:
         db 0b10010010
         db 0b11001111
         db 0x0
+    
+    GDT_user_code:   ; 0x18 - User Code (Ring 3)
+        dw 0xffff
+        dw 0x0
+        db 0x0
+        db 0b11111010 ; Access: P=1, DPL=11 (User), S=1, Type=Code (0xFA)
+        db 0b11001111
+        db 0x0
+
+    GDT_user_data:   ; 0x20 - User Data (Ring 3)
+        dw 0xffff
+        dw 0x0
+        db 0x0
+        db 0b11110010 ; Access: P=1, DPL=11 (User), S=1, Type=Data (0xF2)
+        db 0b11001111
+        db 0x0
+
+    GDT_tss:         ; 0x28 - Task State Segment (Ring 0)
+        dw 103       ; Limit (sizeof TSS - 1)
+        dw 0x0       ; Base 0:15 (To be patched in C)
+        db 0x0       ; Base 16:23 (To be patched in C)
+        db 0b10001001 ; Access: P=1, DPL=00, S=0, Type=32-bit TSS (0x89)
+        db 0b01000000 ; Flags: G=0, D=1 (32-bit)
+        db 0x0       ; Base 24:31 (To be patched in C)
 
 GDT_end:
 
@@ -71,13 +95,13 @@ get_position:
     ; Fill in one PD entry.
     mov eax, (pt - stage2_entry)
     add eax, ebx
-    or eax, 3
+    or eax, 7
     mov edi, (pd - stage2_entry)
     add edi, ebx
     mov [edi], eax
 
     ; Fill in each PT entry.
-    mov eax, 3  ; PT data
+    mov eax, 7  ; PT data
     mov ecx, 0x1000  ; Counter
     mov edi, (pt - stage2_entry)  ; Target (PT entry)
     add edi, ebx
@@ -158,6 +182,34 @@ handle_page_fault:
     popad
     add esp, 4
     iretd
+
+global jump_to_userland
+jump_to_userland:
+    pop eax             ; Pop return address (we don't need it)
+    pop ebx             ; Pop the function_address argument into ebx
+
+    ; 1. Load User Data Selectors (0x20 | 3 = 0x23)
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    ; 2. Manually build the IRET stack frame
+    ; The CPU pops these in a specific hardware-defined order:
+    push 0x23           ; SS (User Data Segment)
+    push 0x90000        ; ESP (Pick a memory area for the user stack)
+    
+    pushfd              ; EFLAGS
+    pop eax
+    or eax, 0x200       ; Set IF (Interrupt Flag) so interrupts stay on
+    push eax
+
+    push 0x1B           ; CS (User Code Segment 0x18 | 3 = 0x1B)
+    push ebx            ; EIP (The address of the user function)
+
+    ; 3. The Transition
+    iretd               ; CPU pops the above and drops to Ring 3
 
 SECTION .bss
 ALIGN 4096

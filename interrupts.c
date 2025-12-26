@@ -67,18 +67,22 @@ void _idt_timer(void) {
 }
 
 void _idt_double_fault(uint32_t error_code) {
-    printk("     Double fault");
-    print_uint(error_code);
+    char *video_memory = (char *)0xb8000;
+    video_memory[0] = 'D';
+    video_memory[2] = 'F';
 }
 
 void _idt_gpf(uint32_t error_code) {
-    printk("     GPF");
-    print_uint(error_code);
+    char *video_memory = (char *)0xb8000;
+    video_memory[0] = 'G';
+    video_memory[2] = 'P';
+    video_memory[4] = 'F';
 }
 
 void _idt_page_fault(uint32_t error_code) {
-    printk("     Page fault");
-    print_uint(error_code);
+    char *video_memory = (char *)0xb8000;
+    video_memory[0] = 'P';
+    video_memory[2] = 'F';
 }
 
 void pic_remap(int offset1, int offset2) {
@@ -108,6 +112,6 @@ void configure_interrupts() {
     struct IDTPointer idt_ptr = init_idt();
     pic_remap(0x20, 0x28);
     asm volatile("lidt %0" : : "m" (idt_ptr));
-    outb(0x21, 0xFE);  // Unmask IRQ 0 (Timer) only
-    asm volatile("sti");
+    // outb(0x21, 0xFE);  // Unmask IRQ 0 (Timer) only
+    // asm volatile("sti");
 }
