@@ -71,13 +71,12 @@ void _kmain(void)
 {
     init_mem();
     configure_interrupts();
-
     init_tss();
-
     init_scheduling();
-    add_task(user_test_program);
 
-    // jump_to_userland((uint32_t)user_test_program);
+    add_task(user_test_program1);
+    add_task(user_test_program2);
+    add_task(user_test_program3);
 
     while (1) {
         asm("hlt"); 

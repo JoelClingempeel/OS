@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define MAX_TASKS 16
+#define MAX_TASKS 4
 
 
 typedef struct {
@@ -15,6 +15,10 @@ typedef struct {
 } task_struct;
 
 extern task_struct* current_task_ptr;
+
+// TODO Use kmalloc instead of these after debugging kmalloc / page allocation.
+extern uint8_t user_stacks[MAX_TASKS][4096];
+extern uint8_t kernel_stacks[MAX_TASKS][4096];
 
 // Create a new task from a function pointer.
 void add_task(void (*entry_point)(void));

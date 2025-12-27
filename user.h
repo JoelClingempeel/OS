@@ -12,7 +12,13 @@ void put_char(uint32_t character, uint32_t color, uint32_t location);
 // Get the number of timer ticks using sys_get_ticks.
 uint32_t get_ticks();
 
-// Test user program to demonstrate syscalls.
-void user_test_program();
+// Put a green Y on the screen and after waiting a bit display the number of ticks.
+void user_test_program1();
+
+// Make a red N repeatedly appear and disappear.
+void user_test_program2();
+
+// Wait a while then display YAY in blue.
+void user_test_program3();
 
 #endif  // USER_H

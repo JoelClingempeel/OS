@@ -6,17 +6,17 @@ task_struct tasks[MAX_TASKS];
 int current_task_index = 0;
 int num_tasks = 0;
 
-uint8_t task1_kstack[4096*5];
-uint8_t task1_ustack[4096*5];
+uint8_t user_stacks[MAX_TASKS][4096] __attribute__((aligned(4096)));
+uint8_t kernel_stacks[MAX_TASKS][4096] __attribute__((aligned(4096)));
 
 void add_task(void (*entry_point)(void)){
     task_struct* new_task = &tasks[num_tasks];
-    new_task->kstack_bottom = (uint32_t)&task1_kstack;
+    new_task->kstack_bottom = (uint32_t)&kernel_stacks[num_tasks][4096];
     new_task->kstack_top = new_task->kstack_bottom + 4096;
 
     uint32_t* new_task_ptr = (uint32_t*)new_task->kstack_top;
     *(--new_task_ptr) = 0x23;                     // SS (User Data)
-    *(--new_task_ptr) = (uint32_t)&task1_ustack + 4096; // ESP (A new User Stack)
+    *(--new_task_ptr) = (uint32_t)&user_stacks[num_tasks][4096]; // ESP (A new User Stack)
     *(--new_task_ptr) = 0x202;                    // EFLAGS (Interrupts enabled)
     *(--new_task_ptr) = 0x1B;                     // CS (User Code)
     *(--new_task_ptr) = (uint32_t)entry_point;    // EIP (Where to start)

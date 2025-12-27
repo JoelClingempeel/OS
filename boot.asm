@@ -220,34 +220,6 @@ handle_page_fault:
     add esp, 4
     iretd
 
-global jump_to_userland
-jump_to_userland:
-    pop eax             ; Pop return address (we don't need it)
-    pop ebx             ; Pop the function_address argument into ebx
-
-    ; 1. Load User Data Selectors (0x20 | 3 = 0x23)
-    mov ax, 0x23
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-
-    ; 2. Manually build the IRET stack frame
-    ; The CPU pops these in a specific hardware-defined order:
-    push 0x23           ; SS (User Data Segment)
-    push 0x90000        ; ESP (Pick a memory area for the user stack)
-    
-    pushfd              ; EFLAGS
-    pop eax
-    or eax, 0x200       ; Set IF (Interrupt Flag) so interrupts stay on
-    push eax
-
-    push 0x1B           ; CS (User Code Segment 0x18 | 3 = 0x1B)
-    push ebx            ; EIP (The address of the user function)
-
-    ; 3. The Transition
-    iretd               ; CPU pops the above and drops to Ring 3
-
 SECTION .bss
 ALIGN 4096
 pd:

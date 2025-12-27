@@ -24,7 +24,7 @@ void put_char(uint32_t character, uint32_t color, uint32_t location) {
     );
 }
 
-void user_test_program() {
+void user_test_program1() {
    put_char('Y', 0x0a, 0x50);
 
     for (uint32_t i = 0; i < 500000000; i++) {
@@ -34,4 +34,27 @@ void user_test_program() {
     print_uint(get_ticks());
 
     while(1) {}
+}
+
+void user_test_program2() {
+    while (1) {
+        for (uint32_t i = 0; i < 50000000; i++) {
+            __asm__ volatile ("nop");
+        }
+        put_char('N', 0x0c, 0x350);
+        for (uint32_t i = 0; i < 50000000; i++) {
+            __asm__ volatile ("nop");
+        }
+        put_char(0, 0x0c, 0x350);
+    }
+}
+
+void user_test_program3() {
+    for (uint32_t i = 0; i < 700000000; i++) {
+        __asm__ volatile ("nop");
+    }
+    put_char('Y', 0x0b, 0x700);
+    put_char('A', 0x0b, 0x702);
+    put_char('Y', 0x0b, 0x704);
+    while (1);
 }
