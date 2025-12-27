@@ -1,3 +1,6 @@
+#ifndef INTERRUPTS_H
+#define INTERRUPTS_H
+
 #include "syscalls.h"
 #include "utils.h"
 
@@ -57,3 +60,5 @@ void pic_remap(int offset1, int offset2);
 
 // Main function to configure interrupts.
 void configure_interrupts();
+
+#endif  // INTERRUPTS_H

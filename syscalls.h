@@ -1,3 +1,6 @@
+#ifndef SYSCALLS_H
+#define SYSCALLS_H
+
 #include <stdint.h>
 
 struct registers {
@@ -7,3 +10,5 @@ struct registers {
 
 // Main syscall function which routes to appropriate syscall.
 void do_syscall(struct registers* regs);
+
+#endif  // SYSCALLS_H

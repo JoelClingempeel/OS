@@ -1,3 +1,6 @@
+#ifndef USER_H
+#define USER_H
+
 #include <stdint.h>
 
 #include "utils.h"
@@ -11,3 +14,5 @@ uint32_t get_ticks();
 
 // Test user program to demonstrate syscalls.
 void user_test_program();
+
+#endif  // USER_H
