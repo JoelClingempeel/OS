@@ -145,31 +145,46 @@ handle_interrupt:
     iretd
 
 extern _idt_timer
+extern schedule
+extern current_task_ptr
 global handle_timer_int
+extern update_tss_esp0
 handle_timer_int:
-    ; 1. Save all general purpose registers
+    ; --- PART 1: SAVE OLD TASK ---
     pushad 
-    ; 2. Save the original Data Segment (which is 0x23 if coming from Userland)
-    mov ax, ds
-    push eax
-    ; 3. Load the Kernel Data Segment (0x10)
-    ; This ensures C code can actually access kernel memory/variables
-    mov ax, 0x10
+    push ds
+    push es
+    push fs
+    push gs
+
+    ; Save the current stack pointer into the current_task_struct
+    ; current_task_ptr is the C variable we talked about
+    mov eax, [current_task_ptr] 
+    mov [eax], esp              ; Assumes 'esp' is the first field in the struct
+
+    ; --- PART 2: SWITCH ---
+    mov ax, 0x10                ; Kernel Data Segment
     mov ds, ax
     mov es, ax
-    mov fs, ax
-    mov gs, ax
-    ; 4. Call the C handler
+
     call _idt_timer
-    ; 5. Restore the original Data Segment (0x23)
-    pop eax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    ; 6. Restore general purpose registers
+    call schedule               ; C function updates current_task_ptr
+
+    ; --- PART 3: LOAD NEW TASK ---
+    mov eax, [current_task_ptr]
+    mov esp, [eax]              ; CPU ESP now points to the NEW task's stack!
+
+    ; Update TSS esp0 so the NEXT interrupt comes back to this new kstack
+    ; [eax + 4] is the 'kstack_top' field in your C struct
+    push dword [eax + 4]        
+    call update_tss_esp0
+    add esp, 4
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
     popad
-    ; 7. Return to whatever Ring we came from
     iretd
 
 extern _idt_double_fault

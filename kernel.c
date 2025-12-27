@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "memory.h"
+#include "scheduler.h"
 #include "user.h"
 #include "utils.h"
 
@@ -60,6 +61,10 @@ void init_tss() {
     __asm__ volatile("ltr %%ax" : : "a"(0x28));
 }
 
+void update_tss_esp0(uint32_t kstack_top) {
+    kernel_tss.esp0 = kstack_top;
+}
+
 extern void jump_to_userland(uint32_t address);
 
 void _kmain(void)
@@ -69,7 +74,10 @@ void _kmain(void)
 
     init_tss();
 
-    jump_to_userland((uint32_t)user_test_program);
+    init_scheduling();
+    add_task(user_test_program);
+
+    // jump_to_userland((uint32_t)user_test_program);
 
     while (1) {
         asm("hlt"); 
