@@ -21,5 +21,4 @@ void do_syscall(struct registers* regs){
     } else if (regs->eax == 1) {
         regs->eax = sys_put_char(regs);
     }
-    __asm__ volatile ("sti");
 }
