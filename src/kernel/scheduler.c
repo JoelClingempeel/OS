@@ -13,6 +13,7 @@ void add_task(void (*entry_point)(void)){
     task_struct* new_task = &tasks[num_tasks];
     new_task->kstack_bottom = (uint32_t)&kernel_stacks[num_tasks][4096];
     new_task->kstack_top = new_task->kstack_bottom + 4096;
+    new_task->active = 1;
 
     uint32_t* new_task_ptr = (uint32_t*)new_task->kstack_top;
     *(--new_task_ptr) = 0x23;                     // SS (User Data)
@@ -37,7 +38,9 @@ void add_task(void (*entry_point)(void)){
 }
 
 void schedule(){
-    current_task_index = (current_task_index + 1) % num_tasks;
+    do {
+        current_task_index = (current_task_index + 1) % num_tasks;
+    } while(tasks[current_task_index].active == 0);
     current_task_ptr = &tasks[current_task_index];
 }
 
