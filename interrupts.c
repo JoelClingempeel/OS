@@ -56,15 +56,15 @@ struct IDTPointer init_idt() {
     return idt_ptr;
 }
 
-void _idt80(void) {
-    char test_string[] = "AAAAA";
-    printk(test_string);
+void _idt80(struct registers* regs) {
+    do_syscall(regs);
 }
 
+volatile uint32_t timer_ticks = 0;
+
 void _idt_timer(void) {
-    char *video_memory = (char *)0xb8000;
-    video_memory[0x30] = 'T';
-    video_memory[0x31] = 0xc;
+    timer_ticks++;
+    outb(0x20, 0x20);  // Restore interrupts.
 }
 
 void _idt_double_fault(uint32_t error_code) {

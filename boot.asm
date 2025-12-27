@@ -138,7 +138,9 @@ extern _idt80
 global handle_interrupt
 handle_interrupt:
     pushad
+    push esp
     call _idt80
+    add esp, 4
     popad
     iretd
 

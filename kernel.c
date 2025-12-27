@@ -59,12 +59,44 @@ void init_tss() {
     __asm__ volatile("ltr %%ax" : : "a"(0x28));
 }
 
-void user_test_program() {
-    char* video_memory = (char*)0xb8050;
-    video_memory[0] = 'U';
-    video_memory[1] = 0x0a; // Green color
+void put_char(uint32_t character, uint32_t color, uint32_t location) {
+    asm volatile (
+        "int $0x80"
+        : 
+        : "a"(1),         // eax = 1 (syscall number)
+          "b"(character), // ebx = character
+          "c"(color),     // ecx = color
+          "d"(location)   // edx = location
+        : "memory"        // Tell compiler memory might be modified
+    );
+}
 
-    __asm__ volatile("mov %cr0, %eax");  // Trigger GPF
+uint32_t get_ticks(){
+    uint32_t count = 0;
+    asm volatile (
+        "int $0x80"
+        : "+a"(count)
+        :
+        : "memory"
+    );
+    return count;
+}
+
+void user_test_program() {
+   put_char('Y', 0x0a, 0x50);
+
+    for (uint32_t i = 0; i < 500000000; i++) {
+        __asm__ volatile ("nop");
+    }
+
+    // uint32_t val = 0;
+    // asm volatile (
+    //     "int $0x80"
+    //     : "+a"(val)
+    //     :
+    //     : "memory"
+    // );
+    print_uint(get_ticks());
 
     while(1) {}
 }
@@ -77,8 +109,6 @@ void _kmain(void)
     configure_interrupts();
 
     init_tss();
-
-    // asm volatile ("int $0x80");  // Software interrupt
 
     jump_to_userland((uint32_t)user_test_program);
 

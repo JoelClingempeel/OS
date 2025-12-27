@@ -6,7 +6,7 @@ OBJCOPY = x86_64-elf-objcopy
 TARGET_ELF = kernel.elf
 TARGET_BIN = kernel.bin
 ASM_SRC = boot.asm
-C_SRCS = kernel.c interrupts.c memory.c utils.c
+C_SRCS = kernel.c interrupts.c memory.c utils.c syscalls.c
 
 OBJ_FILES = $(ASM_SRC:.asm=.o) $(C_SRCS:.c=.o)
 

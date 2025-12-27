@@ -1,3 +1,4 @@
+#include "syscalls.h"
 #include "utils.h"
 
 struct IDTEntry {
@@ -19,6 +20,8 @@ extern void handle_double_fault(void);
 extern void handle_gpf(void);
 extern void handle_page_fault(void);
 
+extern volatile uint32_t timer_ticks;
+
 // Get value from port.
 static inline uint8_t inb(uint16_t port) {
     uint8_t ret;
@@ -35,7 +38,7 @@ static inline void outb(uint16_t port, uint8_t val) {
 struct IDTPointer init_idt();
 
 // Handle software interrupt.
-void _idt80(void);
+void _idt80(struct registers* regs);
 
 // Handle timer interrupt.
 void _idt_timer(void);
