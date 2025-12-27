@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "memory.h"
+#include "user.h"
 #include "utils.h"
 
 
@@ -57,48 +58,6 @@ void init_tss() {
     // 4. Final Step: Load the Task Register
     // This tells the hardware "The TSS is now at GDT index 5 (0x28)"
     __asm__ volatile("ltr %%ax" : : "a"(0x28));
-}
-
-void put_char(uint32_t character, uint32_t color, uint32_t location) {
-    asm volatile (
-        "int $0x80"
-        : 
-        : "a"(1),         // eax = 1 (syscall number)
-          "b"(character), // ebx = character
-          "c"(color),     // ecx = color
-          "d"(location)   // edx = location
-        : "memory"        // Tell compiler memory might be modified
-    );
-}
-
-uint32_t get_ticks(){
-    uint32_t count = 0;
-    asm volatile (
-        "int $0x80"
-        : "+a"(count)
-        :
-        : "memory"
-    );
-    return count;
-}
-
-void user_test_program() {
-   put_char('Y', 0x0a, 0x50);
-
-    for (uint32_t i = 0; i < 500000000; i++) {
-        __asm__ volatile ("nop");
-    }
-
-    // uint32_t val = 0;
-    // asm volatile (
-    //     "int $0x80"
-    //     : "+a"(val)
-    //     :
-    //     : "memory"
-    // );
-    print_uint(get_ticks());
-
-    while(1) {}
 }
 
 extern void jump_to_userland(uint32_t address);
