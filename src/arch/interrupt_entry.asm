@@ -86,3 +86,11 @@ handle_page_fault:
     popad
     add esp, 4
     iretd
+
+extern _keyboard_int
+global handle_keyboard_int
+handle_keyboard_int:
+    pushad
+    call _keyboard_int
+    popad
+    iretd

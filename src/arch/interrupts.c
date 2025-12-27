@@ -50,6 +50,15 @@ struct IDTPointer init_idt() {
     pf_entry->zero = 0;
     pf_entry->type_attr = 0x8E;
 
+    // --- Keyboard Interrupt (IRQ 1 -> Vector 33) ---
+    struct IDTEntry* kbd_entry = &idt[0x21];
+    uint32_t kbd_addr = (uint32_t)(&handle_keyboard_int);
+    kbd_entry->offset_low = kbd_addr & 0xFFFF;
+    kbd_entry->offset_high = kbd_addr >> 16;
+    kbd_entry->selector = 0x08;
+    kbd_entry->zero = 0;
+    kbd_entry->type_attr = 0x8E;
+
     struct IDTPointer idt_ptr;
     idt_ptr.limit = (sizeof(struct IDTEntry) * 256) - 1;
     idt_ptr.base = (uint32_t)&idt;
@@ -86,6 +95,29 @@ void _idt_page_fault(uint32_t error_code) {
     video_memory[2] = 'F';
 }
 
+void _keyboard_int(){
+    uint8_t scancode = inb(0x60);
+    unsigned char local_kbd[128] = {
+        0,  27, '1', '2', '3', '4', '5', '6', '7', '8',
+        '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
+        't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0,
+        'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+        '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n',
+        'm', ',', '.', '/', 0, '*', 0, ' '
+    };
+
+    if (!(scancode & 0x80)) {
+        if (scancode < 128) {
+            char c = local_kbd[scancode];
+            if (c != 0) {
+                outb(0xE9, c);
+            }
+        }
+    }
+
+    outb(0x20, 0x20);
+}
+
 void pic_remap(int offset1, int offset2) {
     // Start initialization sequence (ICW1)
     outb(0x20, 0x11); 
@@ -113,6 +145,8 @@ void configure_interrupts() {
     struct IDTPointer idt_ptr = init_idt();
     pic_remap(0x20, 0x28);
     asm volatile("lidt %0" : : "m" (idt_ptr));
-    outb(0x21, 0xFE);  // Unmask IRQ 0 (Timer) only
+    // Unmask timer and keyboard.
+    outb(0x21, 0xFC);
+    // outb(0x21, 0x0);
     asm volatile("sti");
 }

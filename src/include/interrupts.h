@@ -22,6 +22,7 @@ extern void handle_timer_int(void);
 extern void handle_double_fault(void);
 extern void handle_gpf(void);
 extern void handle_page_fault(void);
+extern void handle_keyboard_int(void);
 
 extern volatile uint32_t timer_ticks;
 
