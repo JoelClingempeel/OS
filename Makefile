@@ -3,16 +3,19 @@ LD = x86_64-elf-ld
 NASM = nasm
 OBJCOPY = x86_64-elf-objcopy
 
+VPATH = src/arch:src/kernel:src/utils
+
 TARGET_ELF = kernel.elf
 TARGET_BIN = kernel.bin
+
 ASM_SRC = boot.asm interrupt_entry.asm
 C_SRCS = kernel.c interrupts.c memory.c utils.c syscalls.c user.c scheduler.c
 
 OBJ_FILES = $(ASM_SRC:.asm=.o) $(C_SRCS:.c=.o)
 
-CFLAGS = -m32 -ffreestanding -c -Wall -Wextra -nostdlib -mno-sse -mno-sse2
+CFLAGS = -m32 -ffreestanding -c -Wall -Wextra -nostdlib -mno-sse -mno-sse2 -Isrc/include
 
-LDFLAGS = -m elf_i386 -T link.ld -nostdlib
+LDFLAGS = -m elf_i386 -T src/arch/link.ld -nostdlib
 
 .PHONY: all clean
 
