@@ -12,6 +12,9 @@ void put_char(uint32_t character, uint32_t color, uint32_t location);
 // Get the number of timer ticks using sys_get_ticks.
 uint32_t get_ticks();
 
+// Waste delay_length * 1,000,000 CPU cycles with NOPs.
+void delay(int delay_length);
+
 // Put a green Y on the screen and after waiting a bit display the number of ticks.
 void user_test_program1();
 
