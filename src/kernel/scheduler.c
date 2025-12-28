@@ -14,6 +14,7 @@ void add_task(void (*entry_point)(void)){
     new_task->kstack_bottom = (uint32_t)&kernel_stacks[num_tasks][4096];
     new_task->kstack_top = new_task->kstack_bottom + 4096;
     new_task->active = 1;
+    new_task->task_index = num_tasks;
 
     uint32_t* new_task_ptr = (uint32_t*)new_task->kstack_top;
     *(--new_task_ptr) = 0x23;                     // SS (User Data)

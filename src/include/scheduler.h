@@ -13,6 +13,7 @@ typedef struct {
     uint32_t kstack_top;
     uint32_t kstack_bottom;
     uint8_t active;
+    uint8_t task_index;
 } task_struct;
 
 extern task_struct* current_task_ptr;
