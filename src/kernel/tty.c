@@ -1,10 +1,13 @@
+#include "scheduler.h"
 #include "tty.h"
 #include "utils.h"
+
 
 struct tty_struct tty = {
     .input_buffer = {0},
     .index = 0,
-    .active = 0
+    .active = 0,
+    .task_index = 0
 };
 
 void tty_handle_keyboard(uint8_t scancode){
@@ -18,7 +21,7 @@ void tty_handle_keyboard(uint8_t scancode){
     };
     if (tty.active) {
         if (scancode == 0x1c) {
-            outb(0xE9, 'A');
+            tty.active = 0;
         } else {
             char c = local_kbd[scancode];
             tty.input_buffer[tty.index] = c;

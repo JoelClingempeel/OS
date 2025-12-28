@@ -24,6 +24,31 @@ void put_char(uint32_t character, uint32_t color, uint32_t location){
     );
 }
 
+char* get_user_input() {
+    uint32_t buffer_addr;
+    asm volatile (
+        "movl $2, %%eax;"    // Syscall index 2
+        "int $0x80;"         // Trigger syscall
+        "movl %%eax, %0;"    // Move result from eax to our variable
+        : "=r"(buffer_addr)  // Output: the address returned by kernel
+        :                    // No inputs
+        : "eax", "memory"    // We tell the compiler we modified eax
+    );
+    return (char*)buffer_addr;
+}
+
+uint32_t read_user_input(){
+    uint32_t eax = 3;
+    asm volatile (
+        "int $0x80"
+        : "+a"(eax)
+        :
+        : "memory"
+    );
+    return eax;
+}
+
+
 void delay(int delay_length){
     for (int i = 0; i < delay_length * 1000000; i++) {
         __asm__ volatile ("nop");
@@ -31,9 +56,24 @@ void delay(int delay_length){
 }
 
 void user_test_program1() {
-    put_char('Y', 0x0a, 0x50);  // Green
-    delay(500);
-    print_uint(get_ticks());
+    // put_char('Y', 0x0a, 0x50);  // Green
+    // delay(500);
+    // print_uint(get_ticks());
+    get_user_input();
+    uint32_t str_addr;
+    while (1){
+        str_addr = read_user_input();
+        if (str_addr != 0) {
+            break;
+        }
+        put_char('N', 0x0c, 0x50);
+        delay(1);
+    }
+    char clear[] = "                              ";
+    printk(clear);
+    delay(200);
+    put_char('Y', 0x0a, 0x50);
+    printk((char*)str_addr);
     while(1) {}
 }
 
