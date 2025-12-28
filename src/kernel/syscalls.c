@@ -30,6 +30,11 @@ static uint32_t sys_read_input(struct registers* regs) {
     return (uint32_t)&tty.input_buffer;
 }
 
+static uint32_t sys_start_process(struct registers* regs) {
+    add_task((void (*)(void))regs->ebx);
+    return 0;
+}
+
 void do_syscall(struct registers* regs){
     if (regs->eax == 0) {
         regs->eax = sys_get_ticks(regs);
@@ -39,5 +44,7 @@ void do_syscall(struct registers* regs){
         regs->eax = sys_get_input(regs);
     } else if (regs->eax == 3) {
         regs->eax = sys_read_input(regs);
+    } else if (regs->eax == 4) {
+        regs->eax = sys_start_process(regs);
     }
 }

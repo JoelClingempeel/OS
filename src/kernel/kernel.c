@@ -75,8 +75,6 @@ void _kmain(void)
     init_scheduling();
 
     add_task(user_test_program1);
-    add_task(user_test_program2);
-    add_task(user_test_program3);
 
     while (1) {
         asm("hlt"); 

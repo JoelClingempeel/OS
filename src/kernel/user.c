@@ -68,15 +68,27 @@ char* get(){
    return (char*) str_addr;
 }
 
+void start_process(void (*func_addr)(void)){
+    asm volatile (
+        "int $0x80"
+        :                 /* No output operands */
+        : "a"(4),         /* eax = 4 (syscall number) */
+          "b"(func_addr)  /* ebx = function address */
+        : "memory"        /* Tell compiler memory might be modified */
+    );
+}
+
 void user_test_program1() {
-    // put_char('Y', 0x0a, 0x50);  // Green
-    // delay(500);
-    // print_uint(get_ticks());
-    char* user_input = get();
-    char clear[] = "                              ";
-    printk(clear);
-    delay(200);
-    printk(user_input);
+    put_char('Y', 0x0a, 0x50);  // Green
+    start_process(user_test_program2);
+    start_process(user_test_program3);
+    delay(500);
+    print_uint(get_ticks());
+    // char* user_input = get();
+    // char clear[] = "                              ";
+    // printk(clear);
+    // delay(200);
+    // printk(user_input);
     while(1) {}
 }
 
