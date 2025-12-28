@@ -37,6 +37,16 @@ void printk(char* string) {
     }
 }
 
+void printk_line(char* string, int line) {
+    char *video_memory = (char *)(0xb8000 + 160 * line);
+    int i = 0;
+    while (string[i] != 0) {
+        video_memory[2 * i] = string[i];
+        video_memory[2 * i + 1] = TEXT_FORMAT_BYTE;
+        i++;
+    }
+}
+
 void print_uint(uint32_t num) {
     char *video_memory = (char *)0xb8000;
     uint8_t digits[10];

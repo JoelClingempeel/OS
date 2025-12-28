@@ -21,6 +21,9 @@ void clear_terminal();
 // Print a string.
 void printk(char* string);
 
+// Print a string at a chosen line.
+void printk_line(char* string, int line);
+
 // Print an unsigned integer.
 void print_uint(uint32_t num);
 
