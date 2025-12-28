@@ -18,6 +18,9 @@ void memset(void* dest, uint8_t value, size_t num_bytes);
 // Clears terminal.
 void clear_terminal();
 
+// Clears a line on the terminal.
+void clear_line(int line);
+
 // Print a string.
 void printk(char* string);
 
