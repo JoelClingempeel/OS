@@ -48,19 +48,15 @@ uint32_t read_user_input(){
     return eax;
 }
 
-
 void delay(int delay_length){
     for (int i = 0; i < delay_length * 1000000; i++) {
         __asm__ volatile ("nop");
     }
 }
 
-void user_test_program1() {
-    // put_char('Y', 0x0a, 0x50);  // Green
-    // delay(500);
-    // print_uint(get_ticks());
-    get_user_input();
+char* get(){
     uint32_t str_addr;
+    get_user_input();
     while (1){
         str_addr = read_user_input();
         if (str_addr != 0) {
@@ -69,11 +65,18 @@ void user_test_program1() {
         put_char('N', 0x0c, 0x50);
         delay(1);
     }
+   return (char*) str_addr;
+}
+
+void user_test_program1() {
+    // put_char('Y', 0x0a, 0x50);  // Green
+    // delay(500);
+    // print_uint(get_ticks());
+    char* user_input = get();
     char clear[] = "                              ";
     printk(clear);
     delay(200);
-    put_char('Y', 0x0a, 0x50);
-    printk((char*)str_addr);
+    printk(user_input);
     while(1) {}
 }
 

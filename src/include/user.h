@@ -15,6 +15,9 @@ uint32_t get_ticks();
 // Waste delay_length * 1,000,000 CPU cycles with NOPs.
 void delay(int delay_length);
 
+// Get user input from the terminal.
+char* get();
+
 // Put a green Y on the screen and after waiting a bit display the number of ticks.
 void user_test_program1();
 
