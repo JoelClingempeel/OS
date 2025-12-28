@@ -9,7 +9,7 @@ TARGET_ELF = kernel.elf
 TARGET_BIN = kernel.bin
 
 ASM_SRC = boot.asm interrupt_entry.asm
-C_SRCS = kernel.c interrupts.c memory.c utils.c syscalls.c user.c scheduler.c tty.c shell.c tss.c
+C_SRCS = kernel.c interrupts.c memory.c utils.c syscalls.c user_lib.c user_progs.c scheduler.c tty.c shell.c tss.c
 
 OBJ_FILES = $(ASM_SRC:.asm=.o) $(C_SRCS:.c=.o)
 

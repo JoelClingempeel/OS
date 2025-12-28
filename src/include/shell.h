@@ -1,7 +1,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-#include "user.h"
+#include "user_lib.h"
+#include "user_progs.h"
 
 
 typedef struct {

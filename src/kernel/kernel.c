@@ -3,7 +3,8 @@
 #include "scheduler.h"
 #include "shell.h"
 #include "tss.h"
-#include "user.h"
+#include "user_lib.h"
+#include "user_progs.h"
 #include "utils.h"
 
 

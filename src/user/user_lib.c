@@ -1,4 +1,4 @@
-#include "user.h"
+#include "user_lib.h"
 
 
 uint32_t get_ticks(){
@@ -23,19 +23,6 @@ void put_char(uint32_t character, uint32_t color, uint32_t location){
         : "memory"        // Tell compiler memory might be modified
     );
 }
-
-// char* get_user_input() {
-//     uint32_t buffer_addr;
-//     asm volatile (
-//         "movl $2, %%eax;"    // Syscall index 2
-//         "int $0x80;"         // Trigger syscall
-//         "movl %%eax, %0;"    // Move result from eax to our variable
-//         : "=r"(buffer_addr)  // Output: the address returned by kernel
-//         :                    // No inputs
-//         : "eax", "memory"    // We tell the compiler we modified eax
-//     );
-//     return (char*)buffer_addr;
-// }
 
 char* get_user_input(uint32_t line) {
     uint32_t buffer_addr;
@@ -125,32 +112,5 @@ void user_clear_line(int line){
 void user_clear_terminal(){
     for (int i = 0; i < 25; i++) {
         user_clear_line(i);
-    }
-}
-
-void blinky() {
-    while (1) {
-        delay(50);
-        put_char('N', 0x0c, 0x350);  // Red
-        delay(50);
-        put_char(0, 0x0c, 0x350);
-    }
-}
-
-void blinky2() {
-    while (1) {
-        delay(50);
-        put_char('Q', 0x0b, 0x700);  // Cyan
-        delay(50);
-        put_char(0, 0x0b, 0x700);
-    }
-}
-
-void blinky3() {
-    while (1) {
-        delay(50);
-        put_char('Y', 0x0a, 0x100);  // Green
-        delay(50);
-        put_char(0, 0x0a, 0x100);
     }
 }

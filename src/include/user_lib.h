@@ -1,5 +1,5 @@
-#ifndef USER_H
-#define USER_H
+#ifndef USER_LIB_H
+#define USER_LIB_H
 
 #include <stdint.h>
 
@@ -33,13 +33,4 @@ void user_clear_line(int line);
 // Clears the terminal.
 void user_clear_terminal();
 
-// Make a red N repeatedly appear and disappear.
-void blinky();
-
-// Make a cyan Q repeatedly appear and disappear.
-void blinky2();
-
-// Make a green Y repeatedly appear and disappear.
-void blinky3();
-
-#endif  // USER_H
+#endif  // USER_LIB_H
