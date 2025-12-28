@@ -9,7 +9,7 @@ int num_tasks = 0;
 uint8_t user_stacks[MAX_TASKS][4096] __attribute__((aligned(4096)));
 uint8_t kernel_stacks[MAX_TASKS][4096] __attribute__((aligned(4096)));
 
-void add_task(void (*entry_point)(void)){
+int add_task(void (*entry_point)(void)){
     task_struct* new_task = &tasks[num_tasks];
     new_task->kstack_bottom = (uint32_t)&kernel_stacks[num_tasks][4096];
     new_task->kstack_top = new_task->kstack_bottom + 4096;
@@ -36,6 +36,7 @@ void add_task(void (*entry_point)(void)){
     new_task->esp = (uint32_t)new_task_ptr;
 
     num_tasks++;
+    return num_tasks - 1;
 }
 
 void schedule(){

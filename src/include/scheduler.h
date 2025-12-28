@@ -17,14 +17,13 @@ typedef struct {
 } task_struct;
 
 extern task_struct* current_task_ptr;
-extern int num_tasks;
 
 // TODO Use kmalloc instead of these after debugging kmalloc / page allocation.
 extern uint8_t user_stacks[MAX_TASKS][4096];
 extern uint8_t kernel_stacks[MAX_TASKS][4096];
 
-// Create a new task from a function pointer.
-void add_task(void (*entry_point)(void));
+// Create a new task from a function pointer and get its PID.
+int add_task(void (*entry_point)(void));
 
 // Schedule a new task for a context switch.
 extern void schedule();
