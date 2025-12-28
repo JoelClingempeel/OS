@@ -14,8 +14,8 @@ void __attribute__((optimize("O0"))) shell(){
     int index = 1;
     int num_programs = sizeof(programs) / sizeof(programs[0]);
     while(1) {
-        char* user_input = get();
-        user_clear_line(0);
+        char* user_input = get(index);
+        index++;
 
         // Start or stop user programs if requested.
         int entered_program = 0;
