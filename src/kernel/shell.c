@@ -1,7 +1,7 @@
 #include "shell.h"
 
 
-void __attribute__((optimize("O0"))) shell(){
+void shell(){
     program p_blinky = {"blinky", blinky, 0};
     program p_blinky2 = {"blinky2", blinky2, 0};
     program p_blinky3 = {"blinky3", blinky3, 0};
