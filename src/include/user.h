@@ -18,6 +18,9 @@ void delay(int delay_length);
 // Get user input from the terminal.
 char* get();
 
+// Start user program and get PID.
+uint32_t start_process(void (*func_addr)(void));
+
 // Put a green Y on the screen and after waiting a bit display the number of ticks.
 void user_test_program1();
 

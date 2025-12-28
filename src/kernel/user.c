@@ -68,22 +68,26 @@ char* get(){
    return (char*) str_addr;
 }
 
-void start_process(void (*func_addr)(void)){
+uint32_t start_process(void (*func_addr)(void)){
+    uint32_t pid;
     asm volatile (
         "int $0x80"
-        :                 /* No output operands */
-        : "a"(4),         /* eax = 4 (syscall number) */
-          "b"(func_addr)  /* ebx = function address */
-        : "memory"        /* Tell compiler memory might be modified */
+        : "=a"(pid)       /* Output: Put the final value of EAX into 'pid' */
+        : "a"(4),         /* Input:  Put 4 into EAX before starting */
+          "b"(func_addr)  /* Input:  Put function pointer into EBX */
+        : "memory"
     );
+    return pid;
 }
 
 void user_test_program1() {
     put_char('Y', 0x0a, 0x50);  // Green
-    start_process(user_test_program2);
-    start_process(user_test_program3);
-    delay(500);
-    print_uint(get_ticks());
+    uint32_t pid2 = start_process(user_test_program2);
+    print_uint(pid2);
+    uint32_t pid3 = start_process(user_test_program3);
+    print_uint(pid3);
+    // delay(500);
+    // print_uint(get_ticks());
     // char* user_input = get();
     // char clear[] = "                              ";
     // printk(clear);

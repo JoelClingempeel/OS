@@ -17,6 +17,7 @@ typedef struct {
 } task_struct;
 
 extern task_struct* current_task_ptr;
+extern int num_tasks;
 
 // TODO Use kmalloc instead of these after debugging kmalloc / page allocation.
 extern uint8_t user_stacks[MAX_TASKS][4096];

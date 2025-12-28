@@ -32,7 +32,8 @@ static uint32_t sys_read_input(struct registers* regs) {
 
 static uint32_t sys_start_process(struct registers* regs) {
     add_task((void (*)(void))regs->ebx);
-    return 0;
+    uint32_t val = (uint32_t)(num_tasks - 1);
+    return val;
 }
 
 void do_syscall(struct registers* regs){
