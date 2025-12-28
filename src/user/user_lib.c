@@ -114,3 +114,22 @@ void user_clear_terminal(){
         user_clear_line(i);
     }
 }
+
+void uint_to_ascii(uint32_t num, char* buffer) {
+    uint8_t digits[10];
+    for (int i = 0; i < 10; i++) {
+        digits[i] = num % 10;
+        num /= 10;
+    }
+    int j = 9;
+    while (digits[j] == 0) {
+        j--;
+    }
+    int pos = 0;
+    while (j >= 0) {
+        buffer[pos] = digits[j] + 48;
+        j--;
+        pos += 1;
+    }
+    buffer[pos] = 0;
+}

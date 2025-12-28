@@ -1,6 +1,8 @@
 #ifndef USER_PROGS_H
 #define USER_PROGS_H
 
+#define FIB_START_LINE 15
+
 
 // Make a red N repeatedly appear and disappear.
 void blinky();
@@ -10,5 +12,8 @@ void blinky2();
 
 // Make a green Y repeatedly appear and disappear.
 void blinky3();
+
+// Computes Fibonacci numbers.
+void fibonacci();
 
 #endif  // USER_PROGS_H

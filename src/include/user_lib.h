@@ -33,4 +33,7 @@ void user_clear_line(int line);
 // Clears the terminal.
 void user_clear_terminal();
 
+// Converts a uint to an ascii string.
+void uint_to_ascii(uint32_t num, char* buffer);
+
 #endif  // USER_LIB_H

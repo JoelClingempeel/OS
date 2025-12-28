@@ -5,10 +5,12 @@ void shell(){
     program p_blinky = {"blinky", blinky, 0};
     program p_blinky2 = {"blinky2", blinky2, 0};
     program p_blinky3 = {"blinky3", blinky3, 0};
+    program p_fib = {"fib", fibonacci, 0};
     program *programs[] = {
         &p_blinky,
         &p_blinky2,
-        &p_blinky3
+        &p_blinky3,
+        &p_fib
     };
 
     int index = 1;

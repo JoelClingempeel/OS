@@ -28,3 +28,22 @@ void blinky3() {
         put_char(0, 0x0a, 0x100);
     }
 }
+
+void fibonacci() {
+    int line = FIB_START_LINE;
+    char str_buf[10];
+    uint32_t prev = 1;
+    uint32_t cur = 1;
+    uint32_t temp;
+    char str_1[] = "1";
+    user_print_line(str_1, FIB_START_LINE);
+    user_print_line(str_1, FIB_START_LINE + 1);
+    for (int i = FIB_START_LINE + 2; i < 25; i++) {
+        temp = cur;
+        cur = cur + prev;
+        prev = temp;
+        uint_to_ascii(cur, str_buf);
+        user_print_line(str_buf, i);
+    }
+    while(1); 
+}
