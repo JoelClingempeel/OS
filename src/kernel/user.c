@@ -101,11 +101,6 @@ void user_test_program1() {
     kill_process(pid3);
     print_uint(pid3);
     // print_uint(get_ticks());
-    // char* user_input = get();
-    // char clear[] = "                              ";
-    // printk(clear);
-    // delay(200);
-    // printk(user_input);
     while(1) {}
 }
 

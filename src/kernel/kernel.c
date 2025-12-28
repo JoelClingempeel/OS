@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "memory.h"
 #include "scheduler.h"
+#include "shell.h"
 #include "user.h"
 #include "utils.h"
 
@@ -74,7 +75,8 @@ void _kmain(void)
     init_tss();
     init_scheduling();
 
-    add_task(user_test_program1);
+    add_task(shell);
+    // add_task(user_test_program1);
 
     while (1) {
         asm("hlt"); 
