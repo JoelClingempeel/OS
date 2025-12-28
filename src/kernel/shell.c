@@ -17,7 +17,6 @@ void __attribute__((optimize("O0"))) shell(){
         char* user_input = get();
         user_clear_line(0);
         char ls[] = "ls";
-        // user_print_line(programs[0].name, 20);
         if (strcmp(user_input, ls) == 0) {
             char ls_string[] = "ls coming soon";
             user_print_line(ls_string, index);
@@ -27,7 +26,6 @@ void __attribute__((optimize("O0"))) shell(){
             int num_programs = sizeof(programs) / sizeof(programs[0]);
             for (int i = 0; i < num_programs; i++) {
                 if (strcmp(user_input, programs[i]->name) == 0) {
-                    printk("wow");
                     if (programs[i]->pid == 0) {
                         programs[i]->pid = start_process(programs[i]->func);
                     } else {
