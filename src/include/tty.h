@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define TTY_GREETING "os% "
+
 
 struct tty_struct {
     char input_buffer[1024];
