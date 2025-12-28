@@ -21,6 +21,9 @@ char* get();
 // Start user program and get PID.
 uint32_t start_process(void (*func_addr)(void));
 
+// Kill a process.
+void kill_process(int pid);
+
 // Put a green Y on the screen and after waiting a bit display the number of ticks.
 void user_test_program1();
 

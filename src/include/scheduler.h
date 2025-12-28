@@ -25,6 +25,9 @@ extern uint8_t kernel_stacks[MAX_TASKS][4096];
 // Create a new task from a function pointer and get its PID.
 int add_task(void (*entry_point)(void));
 
+// Kill a task by PID.
+void kill_task(int pid);
+
 // Schedule a new task for a context switch.
 extern void schedule();
 

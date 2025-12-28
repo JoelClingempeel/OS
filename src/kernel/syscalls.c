@@ -35,6 +35,11 @@ static uint32_t sys_start_process(struct registers* regs) {
     return (uint32_t)pid;
 }
 
+static uint32_t sys_kill_process(struct registers* regs) {
+    kill_task((int)(regs->ebx));
+    return 0;
+}
+
 void do_syscall(struct registers* regs){
     if (regs->eax == 0) {
         regs->eax = sys_get_ticks(regs);
@@ -46,5 +51,7 @@ void do_syscall(struct registers* regs){
         regs->eax = sys_read_input(regs);
     } else if (regs->eax == 4) {
         regs->eax = sys_start_process(regs);
+    } else if (regs->eax == 5) {
+        regs->eax = sys_kill_process(regs);
     }
 }

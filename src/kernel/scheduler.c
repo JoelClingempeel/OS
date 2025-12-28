@@ -46,6 +46,13 @@ int add_task(void (*entry_point)(void)){
     return i;
 }
 
+void kill_task(int pid){
+    task_struct* task = &tasks[pid];
+    // TODO Clear block when memset is available.
+    task->active = 0;  // Skip when scheduling.
+    task->task_index = 0;  // Allow being rescheduled.
+}
+
 void schedule(){
     do {
         current_task_index = (current_task_index + 1) % num_tasks;

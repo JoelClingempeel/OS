@@ -80,13 +80,26 @@ uint32_t start_process(void (*func_addr)(void)){
     return pid;
 }
 
+void kill_process(int pid){
+    asm volatile (
+        "int $0x80"
+        :
+        : "a"(5),
+          "b"(pid)
+        : "memory"
+    );
+}
+
 void user_test_program1() {
     put_char('Y', 0x0a, 0x50);  // Green
     uint32_t pid2 = start_process(user_test_program2);
+    delay(500);
     print_uint(pid2);
+    kill_process(pid2);
     uint32_t pid3 = start_process(user_test_program3);
+    delay(500);
+    kill_process(pid3);
     print_uint(pid3);
-    // delay(500);
     // print_uint(get_ticks());
     // char* user_input = get();
     // char clear[] = "                              ";
@@ -106,9 +119,15 @@ void user_test_program2() {
 }
 
 void user_test_program3() {
-    delay(700);
-    put_char('Y', 0x0b, 0x700);  // Cyan
-    put_char('A', 0x0b, 0x702);
-    put_char('Y', 0x0b, 0x704);
-    while (1);
+    while (1) {
+        delay(50);
+        put_char('Q', 0x0b, 0x700);  // Cyan
+        delay(50);
+        put_char(0, 0x0b, 0x700);
+    }
+    // delay(700);
+    // put_char('Y', 0x0b, 0x700);  // Cyan
+    // put_char('A', 0x0b, 0x702);
+    // put_char('Y', 0x0b, 0x704);
+    // while (1);
 }
