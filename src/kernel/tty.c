@@ -30,7 +30,7 @@ void tty_handle_keyboard(uint8_t scancode){
         '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n',
         'm', ',', '.', '/', 0, '*', 0, ' '
     };
-    const int offset = sizeof(TTY_GREETING) - 1;
+    const int offset = TTY_GREET_LEN;
     if (tty.active) {
         if (scancode == 0x1c) {
             tty.active = 0;
@@ -41,7 +41,7 @@ void tty_handle_keyboard(uint8_t scancode){
                 tty.index -= 1;
                 char *video_memory = (char *)0xb8000;
                 video_memory[2*tty.index + 160*tty.row + 2*offset] = 0;
-                update_cursor(sizeof(TTY_GREETING)- 1 + tty.index, tty.row);
+                update_cursor(TTY_GREET_LEN + tty.index, tty.row);
             }
         } else {
             char c = local_kbd[scancode];
@@ -49,7 +49,7 @@ void tty_handle_keyboard(uint8_t scancode){
             char *video_memory = (char *)0xb8000;
             video_memory[2*tty.index + 160*tty.row + 2*offset] = c;
             tty.index++;
-            update_cursor(sizeof(TTY_GREETING)- 1 + tty.index, tty.row);
+            update_cursor(TTY_GREET_LEN + tty.index, tty.row);
         }
     }
 }

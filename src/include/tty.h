@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define TTY_GREETING "os% "
+#define TTY_GREET_LEN sizeof(TTY_GREETING)-1
 
 
 struct tty_struct {
