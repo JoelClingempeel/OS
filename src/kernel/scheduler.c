@@ -10,15 +10,22 @@ uint8_t user_stacks[MAX_TASKS][4096] __attribute__((aligned(4096)));
 uint8_t kernel_stacks[MAX_TASKS][4096] __attribute__((aligned(4096)));
 
 int add_task(void (*entry_point)(void)){
-    task_struct* new_task = &tasks[num_tasks];
-    new_task->kstack_bottom = (uint32_t)&kernel_stacks[num_tasks][4096];
+    int i = 1;
+    while (tasks[i].task_index != 0) {
+        i++;
+    }
+
+    // TODO Clear stacks before rescheduling a new process.
+
+    task_struct* new_task = &tasks[i];
+    new_task->kstack_bottom = (uint32_t)&kernel_stacks[i][4096];
     new_task->kstack_top = new_task->kstack_bottom + 4096;
     new_task->active = 1;
-    new_task->task_index = num_tasks;
+    new_task->task_index = i;
 
     uint32_t* new_task_ptr = (uint32_t*)new_task->kstack_top;
     *(--new_task_ptr) = 0x23;                     // SS (User Data)
-    *(--new_task_ptr) = (uint32_t)&user_stacks[num_tasks][4096]; // ESP (A new User Stack)
+    *(--new_task_ptr) = (uint32_t)&user_stacks[i][4096]; // ESP (A new User Stack)
     *(--new_task_ptr) = 0x202;                    // EFLAGS (Interrupts enabled)
     *(--new_task_ptr) = 0x1B;                     // CS (User Code)
     *(--new_task_ptr) = (uint32_t)entry_point;    // EIP (Where to start)
@@ -36,7 +43,7 @@ int add_task(void (*entry_point)(void)){
     new_task->esp = (uint32_t)new_task_ptr;
 
     num_tasks++;
-    return num_tasks - 1;
+    return i;
 }
 
 void schedule(){
