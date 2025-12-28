@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "tty.h"
 #include "utils.h"
+#include "interrupts.h"  // TMP
 
 
 struct tty_struct tty = {
@@ -23,6 +24,14 @@ void tty_handle_keyboard(uint8_t scancode){
     if (tty.active) {
         if (scancode == 0x1c) {
             tty.active = 0;
+        } else if (scancode == 0x0E) {
+            // Backspace pressed
+            if (tty.index > 0) {
+                tty.input_buffer[tty.index - 1] = 0;
+                tty.index -= 1;
+                char *video_memory = (char *)0xb8000;
+                video_memory[2*tty.index + 160*tty.row] = 0;
+            }
         } else {
             char c = local_kbd[scancode];
             tty.input_buffer[tty.index] = c;
