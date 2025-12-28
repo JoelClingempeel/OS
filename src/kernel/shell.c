@@ -34,6 +34,7 @@ void __attribute__((optimize("O0"))) shell(){
         if (entered_program == 0) {
             char ls[] = "ls";
             char ps[] = "ps";
+            char clear[] = "clear";
             char help[] = "help";
             if (strcmp(user_input, ls) == 0) {
                 char ls_str[] = "Programs:";
@@ -53,16 +54,21 @@ void __attribute__((optimize("O0"))) shell(){
                         index++;
                     }
                 }
+            } else if (strcmp(user_input, clear) == 0) {
+                user_clear_terminal();
+                index = 0;
             } else if (strcmp(user_input, help) == 0) {
                 char help1_str[] = "ls - list all programs.";
                 char help2_str[] = "ps - list running programs.";
                 char help3_str[] = "<program name> - start or stop program.";
-                char help4_str[] = "help - show commands.";
+                char help4_str[] = "clear - clear terminal.";
+                char help5_str[] = "help - show commands.";
                 user_print_line(help1_str, index);
                 user_print_line(help2_str, index+1);
                 user_print_line(help3_str, index+2);
                 user_print_line(help4_str, index+3);
-                index += 4;
+                user_print_line(help5_str, index+4);
+                index += 5;
             } else {
                 char invalid_str[] = "Invalid command. Type help for options.";
                 user_print_line(invalid_str, index);

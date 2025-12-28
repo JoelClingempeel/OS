@@ -122,6 +122,12 @@ void user_clear_line(int line){
     );
 }
 
+void user_clear_terminal(){
+    for (int i = 0; i < 25; i++) {
+        user_clear_line(i);
+    }
+}
+
 void blinky() {
     while (1) {
         delay(50);

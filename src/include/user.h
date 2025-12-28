@@ -30,6 +30,9 @@ void user_print_line(char* string, int line);
 // Clears a designated line in the terminal.
 void user_clear_line(int line);
 
+// Clears the terminal.
+void user_clear_terminal();
+
 // Make a red N repeatedly appear and disappear.
 void blinky();
 
