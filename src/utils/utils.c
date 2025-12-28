@@ -19,6 +19,13 @@ void memset(void* dest, uint8_t value, size_t num_bytes) {
     }
 }
 
+void clear_terminal() {
+    char *video_memory = (char *)0xb8000;
+    for (int i = 0; i < 2000; i++) {
+        video_memory[2 * i] = 0;
+    }
+}
+
 void printk(char* string) {
     char *video_memory = (char *)0xb8000;
     int i = 0;
