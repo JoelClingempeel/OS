@@ -15,6 +15,9 @@ void* memcpy(void* dest, const void* src, size_t count);
 // Initialize a specified number of bytes with some value.
 void memset(void* dest, uint8_t value, size_t num_bytes);
 
+// Returns 0 if two strings match and 1 otherwise.
+int strcmp(char* str1, char* str2);
+
 // Clears terminal.
 void clear_terminal();
 

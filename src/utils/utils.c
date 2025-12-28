@@ -19,6 +19,17 @@ void memset(void* dest, uint8_t value, size_t num_bytes) {
     }
 }
 
+int strcmp(char* str1, char* str2) {
+    int i = 0;
+    while (str1[i] == str2[i]) {
+        if (str1[i] == '\0') {
+            return 0;
+        }
+        i++;
+    }
+    return 1;
+}
+
 void clear_terminal() {
     char *video_memory = (char *)0xb8000;
     for (int i = 0; i < 2000; i++) {
