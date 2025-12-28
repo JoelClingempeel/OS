@@ -16,7 +16,7 @@ uint32_t get_ticks();
 void delay(int delay_length);
 
 // Get user input from the terminal.
-char* get();
+char* get(uint32_t line);
 
 // Start user program and get PID.
 uint32_t start_process(void (*func_addr)(void));

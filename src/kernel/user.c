@@ -24,15 +24,27 @@ void put_char(uint32_t character, uint32_t color, uint32_t location){
     );
 }
 
-char* get_user_input() {
+// char* get_user_input() {
+//     uint32_t buffer_addr;
+//     asm volatile (
+//         "movl $2, %%eax;"    // Syscall index 2
+//         "int $0x80;"         // Trigger syscall
+//         "movl %%eax, %0;"    // Move result from eax to our variable
+//         : "=r"(buffer_addr)  // Output: the address returned by kernel
+//         :                    // No inputs
+//         : "eax", "memory"    // We tell the compiler we modified eax
+//     );
+//     return (char*)buffer_addr;
+// }
+
+char* get_user_input(uint32_t line) {
     uint32_t buffer_addr;
     asm volatile (
-        "movl $2, %%eax;"    // Syscall index 2
-        "int $0x80;"         // Trigger syscall
-        "movl %%eax, %0;"    // Move result from eax to our variable
-        : "=r"(buffer_addr)  // Output: the address returned by kernel
-        :                    // No inputs
-        : "eax", "memory"    // We tell the compiler we modified eax
+        "int $0x80"
+        : "=a"(buffer_addr)  // eax = return value (output)
+        : "a"(2),            // eax = 2 (syscall number)
+          "b"(line)          // ebx = line (your single argument)
+        : "memory"           // Tell compiler memory might be modified
     );
     return (char*)buffer_addr;
 }
@@ -54,9 +66,9 @@ void delay(int delay_length){
     }
 }
 
-char* get(){
+char* get(uint32_t line){
     uint32_t str_addr;
-    get_user_input();
+    get_user_input(line);
     while (1){
         str_addr = read_user_input();
         if (str_addr != 0) {

@@ -7,6 +7,7 @@
 struct tty_struct {
     char input_buffer[1024];
     uint16_t index;
+    uint8_t row;
     uint8_t active;
     uint8_t task_index;
 };

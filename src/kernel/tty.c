@@ -6,6 +6,7 @@
 struct tty_struct tty = {
     .input_buffer = {0},
     .index = 0,
+    .row = 0,
     .active = 0,
     .task_index = 0
 };
@@ -26,7 +27,7 @@ void tty_handle_keyboard(uint8_t scancode){
             char c = local_kbd[scancode];
             tty.input_buffer[tty.index] = c;
             char *video_memory = (char *)0xb8000;
-            video_memory[2*tty.index] = c;
+            video_memory[2*tty.index + 160*tty.row] = c;
             tty.index++;
         }
     }
