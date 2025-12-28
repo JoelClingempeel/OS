@@ -12,6 +12,9 @@ extern uint8_t next_char;
 // Copy a specified number of bytes.
 void* memcpy(void* dest, const void* src, size_t count);
 
+// Initialize a specified number of bytes with some value.
+void memset(void* dest, uint8_t value, size_t num_bytes);
+
 // Print a string.
 void printk(char* string);
 

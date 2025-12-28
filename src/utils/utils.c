@@ -12,6 +12,13 @@ void* memcpy(void* dest, const void* src, size_t count) {
     return dest;
 }
 
+void memset(void* dest, uint8_t value, size_t num_bytes) {
+    uint8_t* curr = (uint8_t*)dest;
+    for (size_t i = 0; i < num_bytes; i++) {
+        curr[i] = value;
+    }
+}
+
 void printk(char* string) {
     char *video_memory = (char *)0xb8000;
     int i = 0;
