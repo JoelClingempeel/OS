@@ -3,6 +3,13 @@
 
 #include "user.h"
 
+
+typedef struct {
+    char name[32];
+    void (*func)(void);
+    int pid;
+} program;
+
 // User process to start a shell.
 void shell();
 

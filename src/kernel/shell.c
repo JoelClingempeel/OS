@@ -1,30 +1,39 @@
 #include "shell.h"
 
 
-void shell(){
+void __attribute__((optimize("O0"))) shell(){
+    program p_blinky = {"blinky", blinky, 0};
+    program p_blinky2 = {"blinky2", blinky2, 0};
+    program *programs[] = {
+        &p_blinky,
+        &p_blinky2
+    };
+
     int index = 1;
     int blinky_pid = 0;
     while(1) {
         char* user_input = get();
         user_clear_line(0);
         char ls[] = "ls";
-        char blinky[] = "blinky";
+        // user_print_line(programs[0].name, 20);
         if (strcmp(user_input, ls) == 0) {
-            char ls_string[] = "blinky - Blink a red N";
+            char ls_string[] = "ls coming soon";
             user_print_line(ls_string, index);
             index++;
-        } else if (strcmp(user_input, blinky) == 0) {
-            // start_process(user_test_program2);
-            if (blinky_pid == 0) {
-                blinky_pid = start_process(user_test_program2);
-            } else {
-                kill_process(blinky_pid);
-                blinky_pid = 0;
-            }
         } else {
-            char invalid_string[] = "Invalid command. Type ls to see programs.";
-            user_print_line(invalid_string, index);
-            index++;
+            // Start or stop user programs if requested.
+            int num_programs = sizeof(programs) / sizeof(programs[0]);
+            for (int i = 0; i < 2; i++) {
+                if (strcmp(user_input, programs[i]->name) == 0) {
+                    printk("wow");
+                    if (programs[i]->pid == 0) {
+                        programs[i]->pid = start_process(programs[i]->func);
+                    } else {
+                        kill_process(programs[i]->pid);
+                        programs[i]->pid = 0;
+                    }
+                }
+            }
         }
     }
 }

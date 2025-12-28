@@ -110,21 +110,7 @@ void user_clear_line(int line){
     );
 }
 
-void user_test_program1() {
-    put_char('Y', 0x0a, 0x50);  // Green
-    uint32_t pid2 = start_process(user_test_program2);
-    delay(500);
-    print_uint(pid2);
-    kill_process(pid2);
-    uint32_t pid3 = start_process(user_test_program3);
-    delay(500);
-    kill_process(pid3);
-    print_uint(pid3);
-    // print_uint(get_ticks());
-    while(1) {}
-}
-
-void user_test_program2() {
+void blinky() {
     while (1) {
         delay(50);
         put_char('N', 0x0c, 0x350);  // Red
@@ -133,16 +119,20 @@ void user_test_program2() {
     }
 }
 
-void user_test_program3() {
+void blinky2() {
     while (1) {
         delay(50);
         put_char('Q', 0x0b, 0x700);  // Cyan
         delay(50);
         put_char(0, 0x0b, 0x700);
     }
-    // delay(700);
-    // put_char('Y', 0x0b, 0x700);  // Cyan
-    // put_char('A', 0x0b, 0x702);
-    // put_char('Y', 0x0b, 0x704);
-    // while (1);
+}
+
+void blinky3() {
+    while (1) {
+        delay(50);
+        put_char('Y', 0x0a, 0x100);  // Green
+        delay(50);
+        put_char(0, 0x0a, 0x100);
+    }
 }

@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define MAX_TASKS 4
+#define MAX_TASKS 8
 
 
 typedef struct {

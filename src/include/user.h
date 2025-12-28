@@ -30,13 +30,13 @@ void user_print_line(char* string, int line);
 // Clears a designated line in the terminal.
 void user_clear_line(int line);
 
-// Put a green Y on the screen and after waiting a bit display the number of ticks.
-void user_test_program1();
-
 // Make a red N repeatedly appear and disappear.
-void user_test_program2();
+void blinky();
 
-// Wait a while then display YAY in blue.
-void user_test_program3();
+// Make a cyan Q repeatedly appear and disappear.
+void blinky2();
+
+// Make a green Y repeatedly appear and disappear.
+void blinky3();
 
 #endif  // USER_H
