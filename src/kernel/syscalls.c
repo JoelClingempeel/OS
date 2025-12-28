@@ -2,6 +2,7 @@
 #include "scheduler.h"
 #include "syscalls.h"
 #include "tty.h"
+#include "utils.h"
 
 
 // TODO Create a syscall table.
@@ -18,6 +19,8 @@ static uint32_t sys_put_char(struct registers* regs) {
 }
 
 static uint32_t sys_get_input(struct registers* regs) {
+    memset(&tty.input_buffer, 0, 1024);
+    tty.index = 0;
     tty.active = 1;
     tty.task_index = current_task_ptr->task_index;
     return 0;
