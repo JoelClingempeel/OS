@@ -62,7 +62,6 @@ char* get(){
         if (str_addr != 0) {
             break;
         }
-        put_char('N', 0x0c, 0x50);
         delay(1);
     }
    return (char*) str_addr;
