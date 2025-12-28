@@ -43,18 +43,17 @@ static uint32_t sys_kill_process(struct registers* regs) {
     return 0;
 }
 
+
+
 void do_syscall(struct registers* regs){
-    if (regs->eax == 0) {
-        regs->eax = sys_get_ticks(regs);
-    } else if (regs->eax == 1) {
-        regs->eax = sys_put_char(regs);
-    } else if (regs->eax == 2) {
-        regs->eax = sys_get_input(regs);
-    } else if (regs->eax == 3) {
-        regs->eax = sys_read_input(regs);
-    } else if (regs->eax == 4) {
-        regs->eax = sys_start_process(regs);
-    } else if (regs->eax == 5) {
-        regs->eax = sys_kill_process(regs);
-    }
+    uint32_t (*syscall_table[])(struct registers*) = {
+        sys_get_ticks,     // Index 0
+        sys_put_char,      // Index 1
+        sys_get_input,     // Index 2
+        sys_read_input,    // Index 3
+        sys_start_process, // Index 4
+        sys_kill_process   // Index 5
+    };
+    uint32_t syscall_number = regs->eax;
+    regs->eax = syscall_table[syscall_number](regs);
 }
