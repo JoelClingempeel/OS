@@ -66,8 +66,6 @@ void update_tss_esp0(uint32_t kstack_top) {
     kernel_tss.esp0 = kstack_top;
 }
 
-extern void jump_to_userland(uint32_t address);
-
 void _kmain(void)
 {
     init_mem();
