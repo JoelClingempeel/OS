@@ -16,6 +16,8 @@ struct tty_struct {
 
 extern struct tty_struct tty;
 
+void update_cursor(int x, int y);
+
 void tty_handle_keyboard(uint8_t scancode);
 
 #endif  // TTY_H

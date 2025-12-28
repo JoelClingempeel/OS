@@ -24,6 +24,7 @@ static uint32_t sys_get_input(struct registers* regs) {
     tty.task_index = current_task_ptr->task_index;
     char input_str[] = TTY_GREETING;
     printk_line(input_str, regs->ebx);
+    update_cursor(sizeof(TTY_GREETING)-1, regs->ebx);
     return 0;
 }
 

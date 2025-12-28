@@ -1,3 +1,4 @@
+#include "interrupts.h"
 #include "scheduler.h"
 #include "tty.h"
 #include "utils.h"
@@ -10,6 +11,15 @@ struct tty_struct tty = {
     .active = 0,
     .task_index = 0
 };
+
+void update_cursor(int x, int y) {
+    uint16_t pos = y * 80 + x;
+
+    outb(0x3D4, 0x0F); // Tell VGA we are sending the LOW byte
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D4, 0x0E); // Tell VGA we are sending the HIGH byte
+    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+}
 
 void tty_handle_keyboard(uint8_t scancode){
     unsigned char local_kbd[128] = {
@@ -31,6 +41,7 @@ void tty_handle_keyboard(uint8_t scancode){
                 tty.index -= 1;
                 char *video_memory = (char *)0xb8000;
                 video_memory[2*tty.index + 160*tty.row + 2*offset] = 0;
+                update_cursor(sizeof(TTY_GREETING)- 1 + tty.index, tty.row);
             }
         } else {
             char c = local_kbd[scancode];
@@ -38,6 +49,7 @@ void tty_handle_keyboard(uint8_t scancode){
             char *video_memory = (char *)0xb8000;
             video_memory[2*tty.index + 160*tty.row + 2*offset] = c;
             tty.index++;
+            update_cursor(sizeof(TTY_GREETING)- 1 + tty.index, tty.row);
         }
     }
 }
