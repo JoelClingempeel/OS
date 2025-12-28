@@ -4,9 +4,11 @@
 void __attribute__((optimize("O0"))) shell(){
     program p_blinky = {"blinky", blinky, 0};
     program p_blinky2 = {"blinky2", blinky2, 0};
+    program p_blinky3 = {"blinky3", blinky3, 0};
     program *programs[] = {
         &p_blinky,
-        &p_blinky2
+        &p_blinky2,
+        &p_blinky3
     };
 
     int index = 1;
@@ -23,7 +25,7 @@ void __attribute__((optimize("O0"))) shell(){
         } else {
             // Start or stop user programs if requested.
             int num_programs = sizeof(programs) / sizeof(programs[0]);
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < num_programs; i++) {
                 if (strcmp(user_input, programs[i]->name) == 0) {
                     printk("wow");
                     if (programs[i]->pid == 0) {
