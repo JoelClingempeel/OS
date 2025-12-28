@@ -75,7 +75,6 @@ void _kmain(void)
     init_tss();
     init_scheduling();
 
-    clear_terminal();
     add_task(shell);
     // add_task(user_test_program1);
 

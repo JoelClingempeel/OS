@@ -24,6 +24,12 @@ uint32_t start_process(void (*func_addr)(void));
 // Kill a process.
 void kill_process(int pid);
 
+// Print a string at a designated line.
+void user_print_line(char* string, int line);
+
+// Clears a designated line in the terminal.
+void user_clear_line(int line);
+
 // Put a green Y on the screen and after waiting a bit display the number of ticks.
 void user_test_program1();
 

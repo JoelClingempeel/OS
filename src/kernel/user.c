@@ -90,6 +90,27 @@ void kill_process(int pid){
     );
 }
 
+void user_print_line(char* string, int line){
+    asm volatile (
+        "int $0x80"
+        : 
+        : "a"(6),
+          "b"((uint32_t)string),
+          "c"(line)
+        : "memory"
+    );
+}
+
+void user_clear_line(int line){
+    asm volatile (
+        "int $0x80"
+        : 
+        : "a"(7),
+          "b"(line)
+        : "memory"
+    );
+}
+
 void user_test_program1() {
     put_char('Y', 0x0a, 0x50);  // Green
     uint32_t pid2 = start_process(user_test_program2);
