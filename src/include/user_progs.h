@@ -1,7 +1,7 @@
 #ifndef USER_PROGS_H
 #define USER_PROGS_H
 
-#define FIB_START_LINE 15
+#define NUM_FIB_NUMS 10
 
 
 // Make a red N repeatedly appear and disappear.

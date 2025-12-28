@@ -30,15 +30,15 @@ void blinky3() {
 }
 
 void fibonacci() {
-    int line = FIB_START_LINE;
+    int start_line = 25 - NUM_FIB_NUMS;
     char str_buf[10];
     uint32_t prev = 1;
     uint32_t cur = 1;
     uint32_t temp;
     char str_1[] = "1";
-    user_print_line(str_1, FIB_START_LINE);
-    user_print_line(str_1, FIB_START_LINE + 1);
-    for (int i = FIB_START_LINE + 2; i < 25; i++) {
+    user_print_line(str_1, start_line);
+    user_print_line(str_1, start_line + 1);
+    for (int i = start_line + 2; i < 25; i++) {
         temp = cur;
         cur = cur + prev;
         prev = temp;
