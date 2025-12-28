@@ -3,7 +3,7 @@ LD = x86_64-elf-ld
 NASM = nasm
 OBJCOPY = x86_64-elf-objcopy
 
-VPATH = src/arch:src/kernel:src/utils
+VPATH = src/arch:src/kernel:src/user:src/utils
 
 TARGET_ELF = kernel.elf
 TARGET_BIN = kernel.bin
