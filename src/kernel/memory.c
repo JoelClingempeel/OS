@@ -145,3 +145,39 @@ uint32_t kmalloc(uint32_t num_bytes) {
     alloc_node->next = NULL;
     return new_mem + sizeof(free_list_node_t);
 }
+
+void kfree(uint32_t ptr) {
+    free_list_node_t* node = (free_list_node_t*)(ptr - sizeof(free_list_node_t));
+
+    // Find insertion point to keep the free list sorted by address.
+    free_list_node_t* prev = NULL;
+    free_list_node_t* curr = free_list_start;
+    while (curr != NULL && curr < node) {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    // Insert node between prev and curr.
+    node->next = curr;
+    if (prev != NULL) {
+        prev->next = node;
+    } else {
+        free_list_start = node;
+    }
+
+    // Coalesce with next block if adjacent.
+    uint32_t node_end = (uint32_t)node + sizeof(free_list_node_t) + node->size;
+    if (curr != NULL && node_end == (uint32_t)curr) {
+        node->size += sizeof(free_list_node_t) + curr->size;
+        node->next = curr->next;
+    }
+
+    // Coalesce with previous block if adjacent.
+    if (prev != NULL) {
+        uint32_t prev_end = (uint32_t)prev + sizeof(free_list_node_t) + prev->size;
+        if (prev_end == (uint32_t)node) {
+            prev->size += sizeof(free_list_node_t) + node->size;
+            prev->next = node->next;
+        }
+    }
+}

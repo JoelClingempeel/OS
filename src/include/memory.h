@@ -47,4 +47,7 @@ void map_pages(uint32_t virt_addr, uint32_t num_pages, uint32_t flags);
 // Allocate a specified number of bytes.
 uint32_t kmalloc(uint32_t num_bytes);
 
+// Free a previously allocated block.
+void kfree(uint32_t ptr);
+
 #endif  // MEMORY_H
