@@ -13,6 +13,7 @@
 
 #define FLAG_PRESENT 0x1
 #define FLAG_RW      0x2
+#define FLAG_USER    0x4
 #define FLAG_PSE     0x80
 
 
@@ -36,6 +37,9 @@ uint32_t phys_alloc_frame();
 
 // Map a page at a given virtual address.
 void map_page(uint32_t virt_addr, uint32_t flags);
+
+// Unmap a page at a given virtual address and return its frame to the allocator.
+void unmap_page(uint32_t virt_addr);
 
 // Map a specified number of pages at a given virtual address.
 void map_pages(uint32_t virt_addr, uint32_t num_pages, uint32_t flags);

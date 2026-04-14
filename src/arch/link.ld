@@ -33,6 +33,7 @@ SECTIONS {
 
     .bss 0x104000 : {            /* Uninitialized data (PT and PD) */
         *(.bss)
+        _kernel_end = .;
     }
 
     /* 
