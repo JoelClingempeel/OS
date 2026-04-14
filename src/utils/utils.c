@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "interrupts.h"
 
 
 uint8_t next_char = 0;
@@ -81,5 +82,28 @@ void print_uint(uint32_t num) {
         video_memory[next_char + 1] = TEXT_FORMAT_BYTE;
         j--;
         next_char += 2;
+    }
+}
+
+void serial_putc(char c) {
+    outb(0x3F8, c);
+}
+
+void serial_print(const char* s) {
+    for (int i = 0; s[i] != '\0'; i++) {
+        serial_putc(s[i]);
+    }
+}
+
+void serial_print_uint(uint32_t num) {
+    char digits[10];
+    int i = 0;
+    if (num == 0) { serial_putc('0'); return; }
+    while (num > 0) {
+        digits[i++] = '0' + (num % 10);
+        num /= 10;
+    }
+    while (i > 0) {
+        serial_putc(digits[--i]);
     }
 }

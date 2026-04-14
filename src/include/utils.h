@@ -33,4 +33,16 @@ void printk_line(char* string, int line);
 // Print an unsigned integer.
 void print_uint(uint32_t num);
 
+// Write a character to COM1 serial.
+void serial_putc(char c);
+
+// Write a string to COM1 serial.
+void serial_print(const char* s);
+
+// Write an unsigned integer to COM1 serial.
+void serial_print_uint(uint32_t num);
+
+// Write a string literal to COM1 serial without relying on .rodata.
+#define SERIAL_PRINT(str) do { char _m[] = str; serial_print(_m); } while(0)
+
 #endif  // UTILS_H
