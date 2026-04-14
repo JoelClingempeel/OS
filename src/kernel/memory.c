@@ -119,40 +119,60 @@ void map_pages(uint32_t virt_addr, uint32_t num_pages, uint32_t flags) {
 }
 
 uint32_t kmalloc(uint32_t num_bytes) {
-    free_list_node_t* new_node;
     free_list_node_t* prev_node = NULL;
-    free_list_node_t scratch_node;
+    free_list_node_t* node = free_list_start;
 
-    free_list_node_t* node = (free_list_node_t*)free_list_start;
     while (node != NULL) {
         if (node->size >= num_bytes) {
-            // TODO Remove nodes when size reaches 0.
-            new_node = (free_list_node_t*)((uint8_t*)node + num_bytes + sizeof(free_list_node_t));
-            scratch_node = *node;
-            *new_node = scratch_node;
-            if (prev_node != NULL) {
-                prev_node->next = new_node;
+            uint32_t remaining = node->size - num_bytes;
+            if (remaining > sizeof(free_list_node_t)) {
+                // Split: carve off num_bytes, leave a new free node for the rest.
+                free_list_node_t* new_node = (free_list_node_t*)((uint8_t*)node + sizeof(free_list_node_t) + num_bytes);
+                new_node->size = remaining - sizeof(free_list_node_t);
+                new_node->next = node->next;
+                if (prev_node != NULL) {
+                    prev_node->next = new_node;
+                } else {
+                    free_list_start = new_node;
+                }
             } else {
-                free_list_start = new_node;
+                // Not enough room to split — use the whole block.
+                if (prev_node != NULL) {
+                    prev_node->next = node->next;
+                } else {
+                    free_list_start = node->next;
+                }
             }
             node->size = num_bytes;
-            new_node->size = scratch_node.size - num_bytes - sizeof(free_list_node_t);
-            return (uint32_t)(node) + sizeof(free_list_node_t);
+            node->next = NULL;
+            return (uint32_t)node + sizeof(free_list_node_t);
         }
         prev_node = node;
         node = node->next;
     }
-    uint32_t total_needed_bytes = num_bytes + 2 * sizeof(free_list_node_t);
-    uint32_t num_pages = total_needed_bytes / PAGE_SIZE + 1;
-    uint32_t new_alloc_mem_start = vram_border;
-    uint32_t new_unalloc_mem_start = vram_border + num_bytes + sizeof(free_list_node_t);
-    map_pages(vram_border, FLAG_PRESENT | FLAG_RW, num_pages);
+
+    // No suitable block — map new pages.
+    uint32_t total_needed = sizeof(free_list_node_t) + num_bytes;
+    uint32_t num_pages = (total_needed + PAGE_SIZE - 1) / PAGE_SIZE;
+    uint32_t new_mem = vram_border;
+    map_pages(new_mem, num_pages, FLAG_PRESENT | FLAG_RW);
     vram_border += num_pages * PAGE_SIZE;
-    free_list_node_t* new_unalloc_node = (free_list_node_t*)new_unalloc_mem_start;
-    prev_node->next = new_unalloc_node;
-    new_unalloc_node->size = num_pages * PAGE_SIZE - total_needed_bytes;
-    new_unalloc_node->next = NULL;
-    free_list_node_t* new_alloc_node = (free_list_node_t*)new_alloc_mem_start;
-    new_alloc_node->size = num_bytes;
-    return new_alloc_mem_start + sizeof(free_list_node_t);
+
+    // Add any leftover space at the end of the new pages to the free list.
+    uint32_t leftover_size = num_pages * PAGE_SIZE - total_needed;
+    if (leftover_size > sizeof(free_list_node_t)) {
+        free_list_node_t* leftover = (free_list_node_t*)(new_mem + total_needed);
+        leftover->size = leftover_size - sizeof(free_list_node_t);
+        leftover->next = NULL;
+        if (prev_node != NULL) {
+            prev_node->next = leftover;
+        } else {
+            free_list_start = leftover;
+        }
+    }
+
+    free_list_node_t* alloc_node = (free_list_node_t*)new_mem;
+    alloc_node->size = num_bytes;
+    alloc_node->next = NULL;
+    return new_mem + sizeof(free_list_node_t);
 }
