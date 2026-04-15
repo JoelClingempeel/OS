@@ -18,6 +18,9 @@ void memset(void* dest, uint8_t value, size_t num_bytes);
 // Returns 0 if two strings match and 1 otherwise.
 int strcmp(char* str1, char* str2);
 
+// Returns the length of a string not including the null terminator.
+size_t strlen(const char* str);
+
 // Clears terminal.
 void clear_terminal();
 

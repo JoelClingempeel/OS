@@ -20,6 +20,12 @@ void memset(void* dest, uint8_t value, size_t num_bytes) {
     }
 }
 
+size_t strlen(const char* str) {
+    size_t i = 0;
+    while (str[i] != '\0') i++;
+    return i;
+}
+
 int strcmp(char* str1, char* str2) {
     int i = 0;
     while (str1[i] == str2[i]) {

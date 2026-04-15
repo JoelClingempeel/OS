@@ -6,11 +6,15 @@ void shell(){
     program p_blinky2 = {"blinky2", blinky2, 0};
     program p_blinky3 = {"blinky3", blinky3, 0};
     program p_fib = {"fib", fibonacci, 0};
+    program p_write_foo = {"writefoo", write_foo, 0};
+    program p_read_foo = {"readfoo", read_foo, 0};
     program *programs[] = {
         &p_blinky,
         &p_blinky2,
         &p_blinky3,
-        &p_fib
+        &p_fib,
+        &p_write_foo,
+        &p_read_foo
     };
 
     int index = 1;

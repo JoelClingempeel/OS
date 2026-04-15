@@ -115,6 +115,46 @@ void user_clear_terminal(){
     }
 }
 
+int file_read(char* filename, uint8_t* buf) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(8),
+          "b"((uint32_t)filename),
+          "c"((uint32_t)buf)
+        : "memory"
+    );
+    return (int)ret;
+}
+
+int file_write(char* filename, uint8_t* buf, uint32_t size) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(9),
+          "b"((uint32_t)filename),
+          "c"((uint32_t)buf),
+          "d"(size)
+        : "memory"
+    );
+    return (int)ret;
+}
+
+int file_list(char names[][FS_MAX_FILENAME], int max_names) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(10),
+          "b"((uint32_t)names),
+          "c"((uint32_t)max_names)
+        : "memory"
+    );
+    return (int)ret;
+}
+
 void uint_to_ascii(uint32_t num, char* buffer) {
     uint8_t digits[10];
     for (int i = 0; i < 10; i++) {

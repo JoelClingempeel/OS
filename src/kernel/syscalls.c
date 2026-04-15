@@ -1,3 +1,4 @@
+#include "fs.h"
 #include "interrupts.h"
 #include "scheduler.h"
 #include "syscalls.h"
@@ -55,6 +56,18 @@ static uint32_t sys_clear_line(struct registers* regs) {
     return 0;
 }
 
+static uint32_t sys_fs_read(struct registers* regs) {
+    return (uint32_t)fs_read((char*)regs->ebx, (uint8_t*)regs->ecx);
+}
+
+static uint32_t sys_fs_write(struct registers* regs) {
+    return (uint32_t)fs_write((char*)regs->ebx, (uint8_t*)regs->ecx, regs->edx);
+}
+
+static uint32_t sys_fs_list(struct registers* regs) {
+    return (uint32_t)fs_list((char (*)[FS_MAX_FILENAME])regs->ebx, (int)regs->ecx);
+}
+
 void do_syscall(struct registers* regs){
     uint32_t (*syscall_table[])(struct registers*) = {
         sys_get_ticks,     // Index 0
@@ -62,9 +75,12 @@ void do_syscall(struct registers* regs){
         sys_get_input,     // Index 2
         sys_read_input,    // Index 3
         sys_start_process, // Index 4
-        sys_kill_process,  // Index 5,
-        sys_print_line,    // Index 6,
+        sys_kill_process,  // Index 5
+        sys_print_line,    // Index 6
         sys_clear_line,    // Index 7
+        sys_fs_read,       // Index 8
+        sys_fs_write,      // Index 9
+        sys_fs_list,       // Index 10
     };
     uint32_t syscall_number = regs->eax;
     regs->eax = syscall_table[syscall_number](regs);

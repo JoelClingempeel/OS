@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "fs.h"
 #include "utils.h"
 
 
@@ -35,5 +36,14 @@ void user_clear_terminal();
 
 // Converts a uint to an ascii string.
 void uint_to_ascii(uint32_t num, char* buffer);
+
+// Read a file into buf (must be at least 512 bytes). Returns 0 on success, -1 if not found.
+int file_read(char* filename, uint8_t* buf);
+
+// Write buf to a file, creating it if it doesn't exist. Returns 0 on success, -1 if directory full.
+int file_write(char* filename, uint8_t* buf, uint32_t size);
+
+// Fill names with all filenames. Returns the number of entries written, up to max_names.
+int file_list(char names[][FS_MAX_FILENAME], int max_names);
 
 #endif  // USER_LIB_H
