@@ -115,6 +115,35 @@ void user_clear_terminal(){
     }
 }
 
+int get_pid() {
+    uint32_t pid;
+    asm volatile (
+        "int $0x80"
+        : "=a"(pid)
+        : "a"(11)
+        : "memory"
+    );
+    return (int)pid;
+}
+
+int is_running(int pid) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(12),
+          "b"((uint32_t)pid)
+        : "memory"
+    );
+    return (int)ret;
+}
+
+void wait_for(int pid) {
+    while (is_running(pid)) {
+        delay(1);
+    }
+}
+
 int file_read(char* filename, uint8_t* buf) {
     uint32_t ret;
     asm volatile (

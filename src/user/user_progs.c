@@ -43,6 +43,7 @@ void write_foo() {
 
     char done[] = "Written to foo.";
     user_print_line(done, line);
+    kill_process(get_pid());
     while (1);
 }
 
@@ -58,6 +59,7 @@ void read_foo() {
     } else {
         user_print_line((char*)buf, line);
     }
+    kill_process(get_pid());
     while (1);
 }
 

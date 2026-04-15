@@ -9,6 +9,7 @@ typedef struct {
     char name[32];
     void (*func)(void);
     int pid;
+    int foreground;  // 1 = shell waits for exit before resuming, 0 = background
 } program;
 
 // User process to start a shell.

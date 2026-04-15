@@ -68,6 +68,14 @@ static uint32_t sys_fs_list(struct registers* regs) {
     return (uint32_t)fs_list((char (*)[FS_MAX_FILENAME])regs->ebx, (int)regs->ecx);
 }
 
+static uint32_t sys_get_pid(struct registers* regs) {
+    return (uint32_t)current_task_ptr->task_index;
+}
+
+static uint32_t sys_is_running(struct registers* regs) {
+    return (uint32_t)tasks[regs->ebx].active;
+}
+
 void do_syscall(struct registers* regs){
     uint32_t (*syscall_table[])(struct registers*) = {
         sys_get_ticks,     // Index 0
@@ -81,6 +89,8 @@ void do_syscall(struct registers* regs){
         sys_fs_read,       // Index 8
         sys_fs_write,      // Index 9
         sys_fs_list,       // Index 10
+        sys_get_pid,       // Index 11
+        sys_is_running,    // Index 12
     };
     uint32_t syscall_number = regs->eax;
     regs->eax = syscall_table[syscall_number](regs);

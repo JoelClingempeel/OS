@@ -37,6 +37,15 @@ void user_clear_terminal();
 // Converts a uint to an ascii string.
 void uint_to_ascii(uint32_t num, char* buffer);
 
+// Get the PID of the calling process.
+int get_pid();
+
+// Returns 1 if the process with the given PID is still running, 0 otherwise.
+int is_running(int pid);
+
+// Block until the process with the given PID exits.
+void wait_for(int pid);
+
 // Read a file into buf (must be at least 512 bytes). Returns 0 on success, -1 if not found.
 int file_read(char* filename, uint8_t* buf);
 

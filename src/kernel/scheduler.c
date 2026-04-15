@@ -11,7 +11,14 @@ int add_task(void (*entry_point)(void)){
         i++;
     }
 
-    // TODO Clear stacks before rescheduling a new process.
+    // If this slot held a self-terminated task, its stacks were not freed at kill
+    // time (to avoid a use-after-free). Free them now before reusing the slot.
+    if (tasks[i].kstack_bottom != 0) {
+        unmap_page(tasks[i].kstack_bottom);
+        unmap_page(tasks[i].ustack_bottom);
+        tasks[i].kstack_bottom = 0;
+        tasks[i].ustack_bottom = 0;
+    }
 
     // Allocate one page each for the kernel and user stacks.
     uint32_t kstack_page = vram_border;
@@ -53,8 +60,13 @@ int add_task(void (*entry_point)(void)){
 
 void kill_task(int pid){
     task_struct* task = &tasks[pid];
-    unmap_page(task->kstack_bottom);
-    unmap_page(task->ustack_bottom);
+    // Don't unmap the stacks if the task is killing itself — the stack is still
+    // in use until the next context switch and unmapping it here causes a page fault
+    // on return from the syscall. Stack pages are reclaimed when the slot is reused.
+    if (pid != (int)current_task_ptr->task_index) {
+        unmap_page(task->kstack_bottom);
+        unmap_page(task->ustack_bottom);
+    }
     task->active = 0;  // Skip when scheduling.
     task->task_index = 0;  // Allow being rescheduled.
 }

@@ -2,12 +2,12 @@
 
 
 void shell(){
-    program p_blinky = {"blinky", blinky, 0};
-    program p_blinky2 = {"blinky2", blinky2, 0};
-    program p_blinky3 = {"blinky3", blinky3, 0};
-    program p_fib = {"fib", fibonacci, 0};
-    program p_write_foo = {"writefoo", write_foo, 0};
-    program p_read_foo = {"readfoo", read_foo, 0};
+    program p_blinky = {"blinky", blinky, 0, 0};
+    program p_blinky2 = {"blinky2", blinky2, 0, 0};
+    program p_blinky3 = {"blinky3", blinky3, 0, 0};
+    program p_fib = {"fib", fibonacci, 0, 0};
+    program p_write_foo = {"writefoo", write_foo, 0, 1};
+    program p_read_foo = {"readfoo", read_foo, 0, 1};
     program *programs[] = {
         &p_blinky,
         &p_blinky2,
@@ -30,6 +30,10 @@ void shell(){
                 entered_program = 1;
                 if (programs[i]->pid == 0) {
                     programs[i]->pid = start_process(programs[i]->func);
+                    if (programs[i]->foreground) {
+                        wait_for(programs[i]->pid);
+                        programs[i]->pid = 0;
+                    }
                 } else {
                     kill_process(programs[i]->pid);
                     programs[i]->pid = 0;

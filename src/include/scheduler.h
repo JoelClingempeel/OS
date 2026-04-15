@@ -18,6 +18,7 @@ typedef struct {
 } task_struct;
 
 extern task_struct* current_task_ptr;
+extern task_struct tasks[MAX_TASKS];
 
 // Create a new task from a function pointer and get its PID.
 int add_task(void (*entry_point)(void));
