@@ -38,6 +38,18 @@ static inline void outb(uint16_t port, uint8_t val) {
     asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
 }
 
+// Read 16-bit value from port.
+static inline uint16_t inw(uint16_t port) {
+    uint16_t ret;
+    asm volatile ( "inw %1, %0" : "=a"(ret) : "Nd"(port) );
+    return ret;
+}
+
+// Write 16-bit value to port.
+static inline void outw(uint16_t port, uint16_t val) {
+    asm volatile ( "outw %0, %1" : : "a"(val), "Nd"(port) );
+}
+
 // Initialize all interrupts in IDT, and return a pointer to its start.
 struct IDTPointer init_idt();
 
