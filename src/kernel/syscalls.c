@@ -1,5 +1,6 @@
 #include "fs.h"
 #include "interrupts.h"
+#include "memory.h"
 #include "scheduler.h"
 #include "syscalls.h"
 #include "tty.h"
@@ -76,6 +77,13 @@ static uint32_t sys_is_running(struct registers* regs) {
     return (uint32_t)tasks[regs->ebx].active;
 }
 
+static uint32_t sys_alloc_page(struct registers* regs) {
+    uint32_t addr = vram_border;
+    map_page(addr, FLAG_PRESENT | FLAG_RW | FLAG_USER);
+    vram_border += PAGE_SIZE;
+    return addr;
+}
+
 void do_syscall(struct registers* regs){
     uint32_t (*syscall_table[])(struct registers*) = {
         sys_get_ticks,     // Index 0
@@ -91,6 +99,7 @@ void do_syscall(struct registers* regs){
         sys_fs_list,       // Index 10
         sys_get_pid,       // Index 11
         sys_is_running,    // Index 12
+        sys_alloc_page,    // Index 13
     };
     uint32_t syscall_number = regs->eax;
     regs->eax = syscall_table[syscall_number](regs);

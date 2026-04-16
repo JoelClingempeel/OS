@@ -34,6 +34,9 @@ void user_clear_line(int line);
 // Clears the terminal.
 void user_clear_terminal();
 
+// Allocate one 4 KB page mapped with user permissions. Returns a pointer to the page.
+void* alloc_page();
+
 // Converts a uint to an ascii string.
 void uint_to_ascii(uint32_t num, char* buffer);
 
