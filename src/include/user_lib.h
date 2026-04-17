@@ -20,7 +20,7 @@ void delay(int delay_length);
 char* get(uint32_t line);
 
 // Start user program and get PID.
-uint32_t start_process(void (*func_addr)(void));
+uint32_t start_process(void (*func_addr)(void), char* args);
 
 // Kill a process.
 void kill_process(int pid);

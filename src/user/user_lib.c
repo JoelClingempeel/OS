@@ -66,13 +66,14 @@ char* get(uint32_t line){
    return (char*) str_addr;
 }
 
-uint32_t start_process(void (*func_addr)(void)){
+uint32_t start_process(void (*func_addr)(void), char* args){
     uint32_t pid;
     asm volatile (
         "int $0x80"
         : "=a"(pid)       /* Output: Put the final value of EAX into 'pid' */
         : "a"(4),         /* Input:  Put 4 into EAX before starting */
-          "b"(func_addr)  /* Input:  Put function pointer into EBX */
+          "b"(func_addr),  /* Input:  Put function pointer into EBX */
+          "c"((uint32_t)args)  /* Input:  Put args pointer into ECX */
         : "memory"
     );
     return pid;

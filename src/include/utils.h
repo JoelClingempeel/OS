@@ -12,11 +12,17 @@ extern uint8_t next_char;
 // Copy a specified number of bytes.
 void* memcpy(void* dest, const void* src, size_t count);
 
+// Copy a string into a buffer.
+void strcpy(char* dest, char* src);
+
 // Initialize a specified number of bytes with some value.
 void memset(void* dest, uint8_t value, size_t num_bytes);
 
 // Returns 0 if two strings match and 1 otherwise.
 int strcmp(char* str1, char* str2);
+
+// Returns 0 if two strings match up to the first space and 1 otherwise.
+int tokencmp(char* str1, char* str2);
 
 // Returns the length of a string not including the null terminator.
 size_t strlen(const char* str);

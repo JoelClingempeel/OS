@@ -13,6 +13,13 @@ void* memcpy(void* dest, const void* src, size_t count) {
     return dest;
 }
 
+void strcpy(char* dest, char* src) {
+    while (*src != '\0') {
+        *dest++ = *src++;
+    }
+    *dest = '\0';
+}
+
 void memset(void* dest, uint8_t value, size_t num_bytes) {
     uint8_t* curr = (uint8_t*)dest;
     for (size_t i = 0; i < num_bytes; i++) {
@@ -33,6 +40,20 @@ int strcmp(char* str1, char* str2) {
             return 0;
         }
         i++;
+    }
+    return 1;
+}
+
+int tokencmp(char* str1, char* str2) {
+    int i = 0;
+    while (str1[i] == str2[i]) {
+        if (str2[i] == '\0') {
+            return 0;
+        }
+        i++;
+    }
+    if (str2[i] == '\0' && str1[i] == ' ') {
+        return 0;
     }
     return 1;
 }

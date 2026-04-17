@@ -1,5 +1,7 @@
 #include "shell.h"
 
+#include "utils.h"  // TEMP
+
 
 void shell(){
     program p_blinky = {"blinky", blinky, 0, 0};
@@ -26,10 +28,11 @@ void shell(){
         // Start or stop user programs if requested.
         int entered_program = 0;
         for (int i = 0; i < num_programs; i++) {
-            if (strcmp(user_input, programs[i]->name) == 0) {
+            if (tokencmp(user_input, programs[i]->name) == 0) {
+                char* args = user_input + strlen(programs[i]->name) + 1;
                 entered_program = 1;
                 if (programs[i]->pid == 0) {
-                    programs[i]->pid = start_process(programs[i]->func);
+                    programs[i]->pid = start_process(programs[i]->func, args);
                     if (programs[i]->foreground) {
                         wait_for(programs[i]->pid);
                         programs[i]->pid = 0;

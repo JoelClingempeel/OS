@@ -15,13 +15,14 @@ typedef struct {
     uint32_t ustack_bottom;
     uint8_t active;
     uint8_t task_index;
+    char args[32];
 } task_struct;
 
 extern task_struct* current_task_ptr;
 extern task_struct tasks[MAX_TASKS];
 
 // Create a new task from a function pointer and get its PID.
-int add_task(void (*entry_point)(void));
+int add_task(void (*entry_point)(void), char* args);
 
 // Kill a task by PID.
 void kill_task(int pid);

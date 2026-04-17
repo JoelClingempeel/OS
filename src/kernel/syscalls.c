@@ -38,7 +38,7 @@ static uint32_t sys_read_input(struct registers* regs) {
 }
 
 static uint32_t sys_start_process(struct registers* regs) {
-    int pid = add_task((void (*)(void))regs->ebx);
+    int pid = add_task((void (*)(void))regs->ebx, (char*)regs->ecx);
     return (uint32_t)pid;
 }
 

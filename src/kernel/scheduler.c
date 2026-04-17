@@ -5,7 +5,7 @@ task_struct* current_task_ptr;
 task_struct tasks[MAX_TASKS];
 int current_task_index = 0;
 
-int add_task(void (*entry_point)(void)){
+int add_task(void (*entry_point)(void), char* args){
     int i = 1;
     while (tasks[i].task_index != 0) {
         i++;
@@ -54,6 +54,9 @@ int add_task(void (*entry_point)(void)){
     }
 
     new_task->esp = (uint32_t)new_task_ptr;
+
+    // Set task args.
+    strcpy(new_task->args, args);
 
     return i;
 }
