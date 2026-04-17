@@ -34,6 +34,7 @@ void shell(){
                     if (programs[i]->foreground) {
                         wait_for(programs[i]->pid);
                         programs[i]->pid = 0;
+                        index = shell_resume_line;
                     }
                 } else {
                     kill_process(programs[i]->pid);

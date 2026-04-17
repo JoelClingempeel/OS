@@ -2,6 +2,8 @@
 #include "user_progs.h"
 #include "utils.h"
 
+int shell_resume_line = 0;
+
 
 void blinky() {
     // Write 600 bytes of junk followed by a message into "test".
@@ -41,6 +43,7 @@ void blinky3() {
 }
 
 void write_foo() {
+    user_clear_terminal();
     int line = 0;
     char prompt[] = "Enter text to write to foo:";
     user_print_line(prompt, line++);
@@ -52,13 +55,16 @@ void write_foo() {
     char filename[] = "foo";
     file_write(filename, buf, strlen(input) + 1);
 
+    line++;  // blank line between input and confirmation
     char done[] = "Written to foo.";
     user_print_line(done, line);
+    shell_resume_line = line + 2;
     kill_process(get_pid());
     while (1);
 }
 
 void read_foo() {
+    user_clear_terminal();
     uint8_t buf[SECTOR_SIZE];
     char filename[] = "foo";
     int result = file_read(filename, buf);
@@ -68,8 +74,12 @@ void read_foo() {
         char not_found[] = "foo not found.";
         user_print_line(not_found, line);
     } else {
+        char header[] = "Contents of foo:";
+        user_print_line(header, line++);
+        line++;  // blank line
         user_print_line((char*)buf, line);
     }
+    shell_resume_line = line + 2;
     kill_process(get_pid());
     while (1);
 }
