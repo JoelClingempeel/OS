@@ -6,22 +6,12 @@ int shell_resume_line = 0;
 
 
 void blinky() {
-    // Write 600 bytes of junk followed by a message into "test".
-    uint8_t* wbuf = (uint8_t*)alloc_page();
-    for (int i = 0; i < 600; i++) wbuf[i] = 'X';
-    char msg[] = "Hello from offset 600!";
-    uint32_t msg_len = strlen(msg) + 1;
-    memcpy(wbuf + 600, msg, msg_len);
-    char filename[] = "test";
-    file_write(filename, wbuf, 600 + msg_len);
-
-    // Read back just the message and display it.
-    uint8_t rbuf[32];
-    file_read_at(filename, rbuf, 600, msg_len);
-    user_print_line((char*)rbuf, 0);
-
-    kill_process(get_pid());
-    while (1);
+    while (1) {
+        delay(50);
+        put_char('N', 0x0c, 0x350);  // Red
+        delay(50);
+        put_char(0, 0x0c, 0x350);
+    }
 }
 
 void blinky2() {
@@ -80,6 +70,26 @@ void read_foo() {
         user_print_line((char*)buf, line);
     }
     shell_resume_line = line + 2;
+    kill_process(get_pid());
+    while (1);
+}
+
+void write_read_junk() {
+    // Write 600 bytes of junk followed by a message into "test".
+    uint8_t* wbuf = (uint8_t*)alloc_page();
+    for (int i = 0; i < 600; i++) wbuf[i] = 'X';
+    char msg[] = "Hello from offset 600!";
+    uint32_t msg_len = strlen(msg) + 1;
+    memcpy(wbuf + 600, msg, msg_len);
+    char filename[] = "test";
+    file_write(filename, wbuf, 600 + msg_len);
+
+    // Read back just the message and display it.
+    uint8_t rbuf[32];
+    file_read_at(filename, rbuf, 600, msg_len);
+    user_print_line((char*)rbuf, 0);
+
+    shell_resume_line = 2;
     kill_process(get_pid());
     while (1);
 }

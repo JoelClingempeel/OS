@@ -8,13 +8,15 @@ void shell(){
     program p_fib = {"fib", fibonacci, 0, 0};
     program p_write_foo = {"writefoo", write_foo, 0, 1};
     program p_read_foo = {"readfoo", read_foo, 0, 1};
+    program p_write_read_junk = {"writereadjunk", write_read_junk, 0, 1};
     program *programs[] = {
         &p_blinky,
         &p_blinky2,
         &p_blinky3,
         &p_fib,
         &p_write_foo,
-        &p_read_foo
+        &p_read_foo,
+        &p_write_read_junk
     };
 
     int index = 1;

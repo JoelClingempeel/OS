@@ -26,4 +26,7 @@ void write_foo();
 // Reads the file "foo" and prints its contents to the terminal.
 void read_foo();
 
+// Writes 600 bytes of junk followed by a message to "test", then reads the message back.
+void write_read_junk();
+
 #endif  // USER_PROGS_H
