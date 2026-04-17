@@ -58,4 +58,7 @@ int file_write(char* filename, uint8_t* buf, uint32_t size);
 // Fill names with all filenames. Returns the number of entries written, up to max_names.
 int file_list(char names[][FS_MAX_FILENAME], int max_names);
 
+// Get command line arguments to process.
+char* get_args();
+
 #endif  // USER_LIB_H

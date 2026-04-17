@@ -1,7 +1,5 @@
 #include "shell.h"
 
-#include "utils.h"  // TEMP
-
 
 void shell(){
     program p_blinky = {"blinky", blinky, 0, 0};

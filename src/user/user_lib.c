@@ -196,6 +196,17 @@ void* alloc_page() {
     return (void*)addr;
 }
 
+char* get_args() {
+    uint32_t addr;
+    asm volatile (
+        "int $0x80"
+        : "=a"(addr)
+        : "a"(14)
+        : "memory"
+    );
+    return (char*)addr;
+}
+
 void uint_to_ascii(uint32_t num, char* buffer) {
     uint8_t digits[10];
     for (int i = 0; i < 10; i++) {

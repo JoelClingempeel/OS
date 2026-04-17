@@ -1,8 +1,11 @@
 #include "user_lib.h"
 #include "user_progs.h"
+#include "utils.h"
 
 
 void blinky() {
+    char* args = get_args();
+    user_print_line(args, 20);
     while (1) {
         delay(50);
         put_char('N', 0x0c, 0x350);  // Red
