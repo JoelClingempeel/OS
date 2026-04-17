@@ -4,4 +4,4 @@ Build:
  * `make`
 
 Run:
- * `qemu-system-x86_64 kernel.bin`.
+ * `qemu-system-x86_64 kernel.bin -drive file=disk.img`.

@@ -61,4 +61,8 @@ int file_list(char names[][FS_MAX_FILENAME], int max_names);
 // Get command line arguments to process.
 char* get_args();
 
+// Read len bytes starting at byte offset within the file into buf.
+// Returns 0 on success, -1 if not found, -2 if offset is past end of file.
+int file_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len);
+
 #endif  // USER_LIB_H

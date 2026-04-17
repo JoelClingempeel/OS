@@ -88,6 +88,10 @@ static uint32_t sys_get_args(struct registers* regs) {
     return (uint32_t)current_task_ptr->args;
 }
 
+static uint32_t sys_fs_read_at(struct registers* regs) {
+    return (uint32_t)fs_read_at((char*)regs->ebx, (uint8_t*)regs->ecx, regs->edx, regs->esi);
+}
+
 void do_syscall(struct registers* regs){
     uint32_t (*syscall_table[])(struct registers*) = {
         sys_get_ticks,     // Index 0
@@ -105,6 +109,7 @@ void do_syscall(struct registers* regs){
         sys_is_running,    // Index 12
         sys_alloc_page,    // Index 13
         sys_get_args,      // Index 14
+        sys_fs_read_at,    // Index 15
     };
     uint32_t syscall_number = regs->eax;
     regs->eax = syscall_table[syscall_number](regs);

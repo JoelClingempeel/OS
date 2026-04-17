@@ -207,6 +207,21 @@ char* get_args() {
     return (char*)addr;
 }
 
+int file_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(15),
+          "b"((uint32_t)filename),
+          "c"((uint32_t)buf),
+          "d"(offset),
+          "S"(len)
+        : "memory"
+    );
+    return (int)ret;
+}
+
 void uint_to_ascii(uint32_t num, char* buffer) {
     uint8_t digits[10];
     for (int i = 0; i < 10; i++) {
