@@ -7,12 +7,13 @@ typedef struct {
     char     name[FS_MAX_FILENAME];
     uint32_t first_sector;
     uint32_t size;
+    uint8_t  type;                    // FS_TYPE_FILE or FS_TYPE_DIR
 } __attribute__((packed)) dir_entry_t;
 
-// Structured payload of the first directory sector (sector 0), after its next_sector link.
+// Structured payload of a directory's first sector, after its next_sector link.
 typedef struct {
     uint32_t    magic;
-    uint8_t     num_entries;   // total entries across all directory sectors
+    uint8_t     num_entries;          // total entries across all sectors in this directory chain
     uint8_t     reserved[3];
     dir_entry_t entries[FS_MAX_ENTRIES];
 } __attribute__((packed)) dir_payload_t;
@@ -22,29 +23,26 @@ static uint32_t sectors_needed(uint32_t size) {
     return (size + FS_DATA_SIZE - 1) / FS_DATA_SIZE;
 }
 
-// Walk all sector chains reachable from the directory and return max_sector_used + 1.
-static uint32_t find_free_sector(void) {
+// Walk all sectors reachable from the directory chain at dir_first_sec:
+// the chain sectors themselves, all file chains they reference, and recursively
+// all sub-directory chains. Updates *max_used with the highest sector number seen.
+static void walk_all_sectors(uint32_t dir_first_sec, uint32_t* max_used) {
     uint8_t buf[SECTOR_SIZE];
-    uint8_t fbuf[SECTOR_SIZE];
-
-    disk_read(0, buf);
-    dir_payload_t* dp0 = (dir_payload_t*)(buf + 4);
-    if (dp0->magic != FS_MAGIC) return 1;
-
-    uint32_t max_used = 0;
-    uint32_t dir_sec = 0;
+    uint32_t dir_sec = dir_first_sec;
     int chain_pos = 0;
-    int total_entries = dp0->num_entries;
+    int total_entries = 0;
 
     while (dir_sec != NO_NEXT_SECTOR) {
-        if (dir_sec > max_used) max_used = dir_sec;
+        if (dir_sec > *max_used) *max_used = dir_sec;
         disk_read(dir_sec, buf);
         uint32_t next_dir = *(uint32_t*)buf;
 
         dir_entry_t* entries;
         int n;
         if (chain_pos == 0) {
-            entries = ((dir_payload_t*)(buf + 4))->entries;
+            dir_payload_t* dp = (dir_payload_t*)(buf + 4);
+            total_entries = dp->num_entries;
+            entries = dp->entries;
             n = total_entries < FS_MAX_ENTRIES ? total_entries : FS_MAX_ENTRIES;
         } else {
             entries = (dir_entry_t*)(buf + 4);
@@ -53,19 +51,38 @@ static uint32_t find_free_sector(void) {
             n = rem < FS_MAX_ENTRIES ? rem : FS_MAX_ENTRIES;
         }
 
+        // Copy entries before recursive calls overwrite buf.
+        dir_entry_t local[FS_MAX_ENTRIES];
+        for (int i = 0; i < n; i++) local[i] = entries[i];
+
         for (int i = 0; i < n; i++) {
-            uint32_t fsec = entries[i].first_sector;
-            while (fsec != NO_NEXT_SECTOR) {
-                if (fsec > max_used) max_used = fsec;
-                disk_read(fsec, fbuf);
-                fsec = *(uint32_t*)fbuf;
+            if (local[i].type == FS_TYPE_DIR) {
+                walk_all_sectors(local[i].first_sector, max_used);
+            } else {
+                uint8_t fbuf[SECTOR_SIZE];
+                uint32_t fsec = local[i].first_sector;
+                while (fsec != NO_NEXT_SECTOR) {
+                    if (fsec > *max_used) *max_used = fsec;
+                    disk_read(fsec, fbuf);
+                    fsec = *(uint32_t*)fbuf;
+                }
             }
         }
 
         dir_sec = next_dir;
         chain_pos++;
     }
+}
 
+// Walk all sectors reachable from the root and return max_sector_used + 1.
+static uint32_t find_free_sector(void) {
+    uint8_t buf[SECTOR_SIZE];
+    disk_read(0, buf);
+    dir_payload_t* dp0 = (dir_payload_t*)(buf + 4);
+    if (dp0->magic != FS_MAGIC) return 1;
+
+    uint32_t max_used = 0;
+    walk_all_sectors(0, &max_used);
     return max_used + 1;
 }
 
@@ -83,7 +100,7 @@ static void update_file_chain(uint32_t first_sec, const uint8_t* data, uint32_t 
         if (sec != NO_NEXT_SECTOR) {
             current = sec;
             disk_read(sec, sec_buf);
-            sec = *(uint32_t*)sec_buf;  // advance to next existing sector
+            sec = *(uint32_t*)sec_buf;
         } else {
             if (!free_init) {
                 next_free = find_free_sector();
@@ -117,17 +134,17 @@ static void update_file_chain(uint32_t first_sec, const uint8_t* data, uint32_t 
     }
 }
 
-int fs_read(char* filename, uint8_t* buf) {
+int fs_read_in(uint32_t dir_first_sec, char* filename, uint8_t* buf) {
     uint8_t sec_buf[SECTOR_SIZE];
 
-    disk_read(0, sec_buf);
+    disk_read(dir_first_sec, sec_buf);
     dir_payload_t* dp0 = (dir_payload_t*)(sec_buf + 4);
     if (dp0->magic != FS_MAGIC) return -1;
 
     int total_entries = dp0->num_entries;
     uint32_t first_sector = NO_NEXT_SECTOR;
     uint32_t size = 0;
-    uint32_t dir_sec = 0;
+    uint32_t dir_sec = dir_first_sec;
     int chain_pos = 0;
 
     while (dir_sec != NO_NEXT_SECTOR && first_sector == NO_NEXT_SECTOR) {
@@ -147,7 +164,7 @@ int fs_read(char* filename, uint8_t* buf) {
         }
 
         for (int i = 0; i < n; i++) {
-            if (strcmp(entries[i].name, filename) == 0) {
+            if (entries[i].type == FS_TYPE_FILE && strcmp(entries[i].name, filename) == 0) {
                 first_sector = entries[i].first_sector;
                 size = entries[i].size;
                 break;
@@ -173,6 +190,10 @@ int fs_read(char* filename, uint8_t* buf) {
     }
 
     return 0;
+}
+
+int fs_read(char* filename, uint8_t* buf) {
+    return fs_read_in(0, filename, buf);
 }
 
 int fs_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
@@ -205,7 +226,7 @@ int fs_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
         }
 
         for (int i = 0; i < n; i++) {
-            if (strcmp(entries[i].name, filename) == 0) {
+            if (entries[i].type == FS_TYPE_FILE && strcmp(entries[i].name, filename) == 0) {
                 first_sector = entries[i].first_sector;
                 size = entries[i].size;
                 break;
@@ -219,11 +240,9 @@ int fs_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
     if (first_sector == NO_NEXT_SECTOR) return -1;
     if (offset >= size) return -2;
 
-    // Clamp len to available bytes.
     uint32_t available = size - offset;
     if (len > available) len = available;
 
-    // Skip sectors that fall entirely before the offset.
     uint32_t sec_skip = offset / FS_DATA_SIZE;
     uint32_t sec_offset = offset % FS_DATA_SIZE;
     uint32_t sec = first_sector;
@@ -232,7 +251,6 @@ int fs_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
         sec = *(uint32_t*)sec_buf;
     }
 
-    // Read len bytes starting at sec_offset within the current sector.
     uint32_t bytes_left = len;
     int first = 1;
     while (sec != NO_NEXT_SECTOR && bytes_left > 0) {
@@ -252,16 +270,14 @@ int fs_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
     return 0;
 }
 
-int fs_write(char* filename, uint8_t* buf, uint32_t size) {
+int fs_write_in(uint32_t dir_first_sec, char* filename, uint8_t* buf, uint32_t size) {
     uint8_t sec_buf[SECTOR_SIZE];
 
-    disk_read(0, sec_buf);
+    disk_read(dir_first_sec, sec_buf);
     dir_payload_t* dp0 = (dir_payload_t*)(sec_buf + 4);
     int total_entries = (dp0->magic == FS_MAGIC) ? (int)dp0->num_entries : 0;
 
-    // Search directory chain for an existing entry to overwrite.
-    // Skip the walk entirely on an uninitialised disk (next_sector would be 0, causing a loop).
-    uint32_t dir_sec = (dp0->magic == FS_MAGIC) ? 0 : NO_NEXT_SECTOR;
+    uint32_t dir_sec = (dp0->magic == FS_MAGIC) ? dir_first_sec : NO_NEXT_SECTOR;
     int chain_pos = 0;
     while (dir_sec != NO_NEXT_SECTOR) {
         disk_read(dir_sec, sec_buf);
@@ -280,7 +296,7 @@ int fs_write(char* filename, uint8_t* buf, uint32_t size) {
         }
 
         for (int i = 0; i < n; i++) {
-            if (strcmp(entries[i].name, filename) == 0) {
+            if (entries[i].type == FS_TYPE_FILE && strcmp(entries[i].name, filename) == 0) {
                 uint32_t first_sec = entries[i].first_sector;
                 entries[i].size = size;
                 disk_write(dir_sec, sec_buf);
@@ -298,8 +314,8 @@ int fs_write(char* filename, uint8_t* buf, uint32_t size) {
     int entry_slot = total_entries % FS_MAX_ENTRIES;
     uint32_t next_free = find_free_sector();
 
-    // Walk to target_chain_pos in the directory chain, allocating new dir sectors as needed.
-    dir_sec = 0;
+    // Walk to target_chain_pos in this directory chain, allocating new dir sectors as needed.
+    dir_sec = dir_first_sec;
     chain_pos = 0;
     while (chain_pos < target_chain_pos) {
         disk_read(dir_sec, sec_buf);
@@ -331,11 +347,11 @@ int fs_write(char* filename, uint8_t* buf, uint32_t size) {
         dp->num_entries++;
         entry = &dp->entries[entry_slot];
     } else {
-        // num_entries lives in sector 0; update it separately.
+        // num_entries lives in dir_first_sec; update it separately.
         uint8_t s0[SECTOR_SIZE];
-        disk_read(0, s0);
+        disk_read(dir_first_sec, s0);
         ((dir_payload_t*)(s0 + 4))->num_entries++;
-        disk_write(0, s0);
+        disk_write(dir_first_sec, s0);
         entry = &((dir_entry_t*)(sec_buf + 4))[entry_slot];
     }
 
@@ -343,6 +359,7 @@ int fs_write(char* filename, uint8_t* buf, uint32_t size) {
     entry->name[FS_MAX_FILENAME - 1] = '\0';
     entry->first_sector = next_free;
     entry->size = size;
+    entry->type = FS_TYPE_FILE;
     disk_write(dir_sec, sec_buf);
 
     // Write file data sectors contiguously from next_free.
@@ -362,16 +379,20 @@ int fs_write(char* filename, uint8_t* buf, uint32_t size) {
     return 0;
 }
 
-int fs_list(char names[][FS_MAX_FILENAME], int max_names) {
+int fs_write(char* filename, uint8_t* buf, uint32_t size) {
+    return fs_write_in(0, filename, buf, size);
+}
+
+int fs_list_in(uint32_t dir_first_sec, char names[][FS_MAX_FILENAME], int max_names) {
     uint8_t sec_buf[SECTOR_SIZE];
 
-    disk_read(0, sec_buf);
+    disk_read(dir_first_sec, sec_buf);
     dir_payload_t* dp0 = (dir_payload_t*)(sec_buf + 4);
     if (dp0->magic != FS_MAGIC) return 0;
 
     int total_entries = dp0->num_entries;
     int count = 0;
-    uint32_t dir_sec = 0;
+    uint32_t dir_sec = dir_first_sec;
     int chain_pos = 0;
 
     while (dir_sec != NO_NEXT_SECTOR && count < max_names) {
@@ -391,7 +412,8 @@ int fs_list(char names[][FS_MAX_FILENAME], int max_names) {
         }
 
         for (int i = 0; i < n && count < max_names; i++) {
-            memcpy(names[count++], entries[i].name, FS_MAX_FILENAME);
+            if (entries[i].type == FS_TYPE_FILE)
+                memcpy(names[count++], entries[i].name, FS_MAX_FILENAME);
         }
 
         dir_sec = next_dir;
@@ -399,4 +421,144 @@ int fs_list(char names[][FS_MAX_FILENAME], int max_names) {
     }
 
     return count;
+}
+
+int fs_list(char names[][FS_MAX_FILENAME], int max_names) {
+    return fs_list_in(0, names, max_names);
+}
+
+uint32_t fs_find_dir(char* name) {
+    uint8_t sec_buf[SECTOR_SIZE];
+
+    disk_read(0, sec_buf);
+    dir_payload_t* dp0 = (dir_payload_t*)(sec_buf + 4);
+    if (dp0->magic != FS_MAGIC) return NO_NEXT_SECTOR;
+
+    int total_entries = dp0->num_entries;
+    uint32_t dir_sec = 0;
+    int chain_pos = 0;
+
+    while (dir_sec != NO_NEXT_SECTOR) {
+        disk_read(dir_sec, sec_buf);
+        uint32_t next_dir = *(uint32_t*)sec_buf;
+
+        dir_entry_t* entries;
+        int n;
+        if (chain_pos == 0) {
+            entries = ((dir_payload_t*)(sec_buf + 4))->entries;
+            n = total_entries < FS_MAX_ENTRIES ? total_entries : FS_MAX_ENTRIES;
+        } else {
+            entries = (dir_entry_t*)(sec_buf + 4);
+            int start = chain_pos * FS_MAX_ENTRIES;
+            int rem = total_entries - start;
+            n = rem < FS_MAX_ENTRIES ? rem : FS_MAX_ENTRIES;
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (entries[i].type == FS_TYPE_DIR && strcmp(entries[i].name, name) == 0)
+                return entries[i].first_sector;
+        }
+
+        dir_sec = next_dir;
+        chain_pos++;
+    }
+
+    return NO_NEXT_SECTOR;
+}
+
+uint32_t fs_mkdir(char* name) {
+    uint8_t sec_buf[SECTOR_SIZE];
+
+    disk_read(0, sec_buf);
+    dir_payload_t* dp0 = (dir_payload_t*)(sec_buf + 4);
+    int total_entries = (dp0->magic == FS_MAGIC) ? (int)dp0->num_entries : 0;
+
+    // Check for name conflict anywhere in the root directory chain.
+    uint32_t dir_sec = (dp0->magic == FS_MAGIC) ? 0 : NO_NEXT_SECTOR;
+    int chain_pos = 0;
+    while (dir_sec != NO_NEXT_SECTOR) {
+        disk_read(dir_sec, sec_buf);
+        uint32_t next_dir = *(uint32_t*)sec_buf;
+
+        dir_entry_t* entries;
+        int n;
+        if (chain_pos == 0) {
+            entries = ((dir_payload_t*)(sec_buf + 4))->entries;
+            n = total_entries < FS_MAX_ENTRIES ? total_entries : FS_MAX_ENTRIES;
+        } else {
+            entries = (dir_entry_t*)(sec_buf + 4);
+            int start = chain_pos * FS_MAX_ENTRIES;
+            int rem = total_entries - start;
+            n = rem < FS_MAX_ENTRIES ? rem : FS_MAX_ENTRIES;
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (strcmp(entries[i].name, name) == 0) return NO_NEXT_SECTOR;
+        }
+
+        dir_sec = next_dir;
+        chain_pos++;
+    }
+
+    int target_chain_pos = total_entries / FS_MAX_ENTRIES;
+    int entry_slot = total_entries % FS_MAX_ENTRIES;
+    uint32_t next_free = find_free_sector();
+
+    // Walk to target_chain_pos in root, allocating new dir sectors as needed.
+    dir_sec = 0;
+    chain_pos = 0;
+    while (chain_pos < target_chain_pos) {
+        disk_read(dir_sec, sec_buf);
+        uint32_t next_dir = *(uint32_t*)sec_buf;
+        if (next_dir == NO_NEXT_SECTOR) {
+            uint32_t new_dir_sec = next_free++;
+            *(uint32_t*)sec_buf = new_dir_sec;
+            disk_write(dir_sec, sec_buf);
+            memset(sec_buf, 0, SECTOR_SIZE);
+            *(uint32_t*)sec_buf = NO_NEXT_SECTOR;
+            disk_write(new_dir_sec, sec_buf);
+            dir_sec = new_dir_sec;
+        } else {
+            dir_sec = next_dir;
+        }
+        chain_pos++;
+    }
+
+    // Insert the new directory entry into the target root sector.
+    disk_read(dir_sec, sec_buf);
+    dir_entry_t* entry;
+    if (target_chain_pos == 0) {
+        dir_payload_t* dp = (dir_payload_t*)(sec_buf + 4);
+        if (dp->magic != FS_MAGIC) {
+            *(uint32_t*)sec_buf = NO_NEXT_SECTOR;
+            dp->magic = FS_MAGIC;
+            dp->num_entries = 0;
+        }
+        dp->num_entries++;
+        entry = &dp->entries[entry_slot];
+    } else {
+        uint8_t s0[SECTOR_SIZE];
+        disk_read(0, s0);
+        ((dir_payload_t*)(s0 + 4))->num_entries++;
+        disk_write(0, s0);
+        entry = &((dir_entry_t*)(sec_buf + 4))[entry_slot];
+    }
+
+    uint32_t new_dir_first_sec = next_free;
+    memcpy(entry->name, name, FS_MAX_FILENAME);
+    entry->name[FS_MAX_FILENAME - 1] = '\0';
+    entry->first_sector = new_dir_first_sec;
+    entry->size = 0;
+    entry->type = FS_TYPE_DIR;
+    disk_write(dir_sec, sec_buf);
+
+    // Initialize the new directory's first sector.
+    memset(sec_buf, 0, SECTOR_SIZE);
+    *(uint32_t*)sec_buf = NO_NEXT_SECTOR;
+    dir_payload_t* new_dp = (dir_payload_t*)(sec_buf + 4);
+    new_dp->magic = FS_MAGIC;
+    new_dp->num_entries = 0;
+    disk_write(new_dir_first_sec, sec_buf);
+
+    return new_dir_first_sec;
 }
