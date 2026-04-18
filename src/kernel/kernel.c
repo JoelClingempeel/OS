@@ -16,7 +16,7 @@ void _kmain(void)
     init_scheduling();
 
     clear_terminal();
-    add_task(shell);
+    add_task(shell, "");
 
     while (1) {
         asm("hlt"); 
