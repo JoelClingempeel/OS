@@ -94,6 +94,132 @@ void write_read_junk() {
     while (1);
 }
 
+static int ls_count(char* buf) {
+    if (!buf[0]) return 0;
+    int count = 1;
+    for (int i = 0; buf[i]; i++)
+        if (buf[i] == ',') count++;
+    return count;
+}
+
+static int ls_contains(char* buf, char* name) {
+    int i = 0;
+    while (buf[i]) {
+        int j = 0;
+        while (name[j] && buf[i + j] && buf[i + j] != ',' && name[j] == buf[i + j])
+            j++;
+        if (!name[j] && (!buf[i + j] || buf[i + j] == ',')) return 1;
+        while (buf[i] && buf[i] != ',') i++;
+        if (buf[i] == ',') i++;
+    }
+    return 0;
+}
+
+static void print_int(int v, int line) {
+    char tmp[16];
+    if (v < 0) {
+        tmp[0] = '-';
+        uint_to_ascii((uint32_t)(-v), tmp + 1);
+    } else {
+        uint_to_ascii((uint32_t)v, tmp);
+    }
+    user_print_line(tmp, line);
+}
+
+void fs_tests() {
+    user_clear_terminal();
+    char buf[512];
+    char ls_buf[512];
+    int r;
+    int line = 0;
+
+    { char m[] = "--- USERLAND FS TESTS ---"; user_print_line(m, line++); }
+
+    // Test 1: mkdir /docs appears in ls /.
+    { char p[] = "/docs"; fs_mkdir(p); }
+    ls_buf[0] = '\0';
+    { char p[] = "/"; fs_ls(p, ls_buf); }
+    { char name[] = "docs";
+      if (ls_contains(ls_buf, name)) {
+          char m[] = "PASS: /docs in ls /"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: /docs in ls /"; user_print_line(m, line++);
+          { char m2[] = "  ls / returned:"; user_print_line(m2, line++); }
+          user_print_line(ls_buf[0] ? ls_buf : "(empty)", line++);
+      } }
+
+    // Test 2: mkdir /docs/notes appears in ls /docs.
+    { char p[] = "/docs/notes"; fs_mkdir(p); }
+    ls_buf[0] = '\0';
+    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { char name[] = "notes";
+      if (ls_contains(ls_buf, name)) {
+          char m[] = "PASS: /docs/notes in ls /docs"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: /docs/notes in ls /docs"; user_print_line(m, line++);
+          { char m2[] = "  ls /docs returned:"; user_print_line(m2, line++); }
+          user_print_line(ls_buf[0] ? ls_buf : "(empty)", line++);
+      } }
+
+    // Test 3: write then read /docs/readme.
+    { char p[] = "/docs/readme"; char c[] = "hello from readme"; r = fs_write(p, c); }
+    { char m[] = "  T3 fs_write ret:"; user_print_line(m, line); print_int(r, line + 1); line += 2; }
+    memset(buf, 0, sizeof(buf));
+    { char p[] = "/docs/readme"; r = fs_read(p, buf); }
+    { char expected[] = "hello from readme";
+      if (r == 0 && strcmp(buf, expected) == 0) {
+          char m[] = "PASS: write/read /docs/readme"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: write/read /docs/readme"; user_print_line(m, line++);
+          { char m2[] = "  fs_read ret:"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+          { char m2[] = "  buf:"; user_print_line(m2, line++); }
+          user_print_line(buf[0] ? buf : "(empty)", line++);
+      } }
+
+    // Test 4: write then read /docs/notes/entry1.
+    { char p[] = "/docs/notes/entry1"; char c[] = "first note"; r = fs_write(p, c); }
+    { char m[] = "  T4 fs_write ret:"; user_print_line(m, line); print_int(r, line + 1); line += 2; }
+    memset(buf, 0, sizeof(buf));
+    { char p[] = "/docs/notes/entry1"; r = fs_read(p, buf); }
+    { char expected[] = "first note";
+      if (r == 0 && strcmp(buf, expected) == 0) {
+          char m[] = "PASS: write/read /docs/notes/entry1"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: write/read /docs/notes/entry1"; user_print_line(m, line++);
+          { char m2[] = "  fs_read ret:"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+          { char m2[] = "  buf:"; user_print_line(m2, line++); }
+          user_print_line(buf[0] ? buf : "(empty)", line++);
+      } }
+
+    // Test 5: ls /docs has 2 entries.
+    ls_buf[0] = '\0';
+    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { int cnt = ls_count(ls_buf);
+      if (cnt == 2) {
+          char m[] = "PASS: ls /docs has 2 entries"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: ls /docs has 2 entries"; user_print_line(m, line++);
+          { char m2[] = "  count:"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+          { char m2[] = "  ls /docs:"; user_print_line(m2, line++); }
+          user_print_line(ls_buf[0] ? ls_buf : "(empty)", line++);
+      } }
+
+    // Test 6: fs_read returns -1 for a missing path.
+    { char p[] = "/does/not/exist"; r = fs_read(p, buf); }
+    if (r == -1) {
+        char m[] = "PASS: fs_read -1 for missing path"; user_print_line(m, line++);
+    } else {
+        char m[] = "FAIL: fs_read -1 for missing path"; user_print_line(m, line++);
+        { char m2[] = "  fs_read ret (expected -1):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+    }
+
+    { char m[] = "--- DONE ---"; user_print_line(m, line++); }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
 void fibonacci() {
     int start_line = 25 - NUM_FIB_NUMS;
     char str_buf[10];

@@ -24,7 +24,7 @@ void init_mem() {
 
     for (int i = 1; i < 1024; i++) {
         pd_addr[i] = i * 0x400000;
-        pd_addr[i] |= FLAG_PRESENT | FLAG_RW | FLAG_PSE;
+        pd_addr[i] |= FLAG_PRESENT | FLAG_RW | FLAG_PSE | FLAG_USER; // TODO: remove FLAG_USER once user/kernel memory protection is sorted out
     }
 
     // Mark all frames occupied by the kernel as used so they are never handed out.
@@ -124,7 +124,7 @@ uint32_t kmalloc(uint32_t num_bytes) {
     uint32_t total_needed = sizeof(free_list_node_t) + num_bytes;
     uint32_t num_pages = (total_needed + PAGE_SIZE - 1) / PAGE_SIZE;
     uint32_t new_mem = vram_border;
-    map_pages(new_mem, num_pages, FLAG_PRESENT | FLAG_RW);
+    map_pages(new_mem, num_pages, FLAG_PRESENT | FLAG_RW | FLAG_USER); // TODO: remove FLAG_USER once user/kernel memory protection is sorted out
     vram_border += num_pages * PAGE_SIZE;
 
     // Add any leftover space at the end of the new pages to the free list.

@@ -94,6 +94,21 @@ void _idt_page_fault(uint32_t error_code) {
     char *video_memory = (char *)0xb8000;
     video_memory[0] = 'P';
     video_memory[2] = 'F';
+
+    uint32_t cr2;
+    asm volatile("mov %%cr2, %0" : "=r"(cr2));
+
+    SERIAL_PRINT("[PF] error_code=0x");
+    serial_print_uint(error_code);
+    SERIAL_PRINT(" cr2=0x");
+    serial_print_uint(cr2);
+    if (error_code & 1) { char m[] = " protection-violation"; serial_print(m); }
+    else                { char m[] = " not-present";          serial_print(m); }
+    if (error_code & 2) { char m[] = " write"; serial_print(m); }
+    else                { char m[] = " read";  serial_print(m); }
+    if (error_code & 4) { char m[] = " user-mode";   serial_print(m); }
+    else                { char m[] = " kernel-mode";  serial_print(m); }
+    SERIAL_PRINT("\n");
 }
 
 void _keyboard_int(){

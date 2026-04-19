@@ -30,8 +30,15 @@ static void run_fs_tests(void) {
     { char expected[] = "notes";
       if (count == 1 && strcmp(names[0], expected) == 0)
           SERIAL_PRINT("PASS: /docs/notes in lsdir /docs\n");
-      else
-          SERIAL_PRINT("FAIL: /docs/notes in lsdir /docs\n"); }
+      else {
+          SERIAL_PRINT("FAIL: /docs/notes in lsdir /docs\n");
+          SERIAL_PRINT("  entries found:\n");
+          for (int i = 0; i < count; i++) {
+              SERIAL_PRINT("    - ");
+              serial_print(names[i]);
+              SERIAL_PRINT("\n");
+          }
+      } }
 
     // Test 3: write then read /docs/readme.
     { char p[] = "/docs/readme"; make_file(p, 0); }

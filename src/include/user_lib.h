@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "fs.h"
+#include "files.h"
 #include "utils.h"
 
 
@@ -56,10 +56,22 @@ int file_read(char* filename, uint8_t* buf);
 int file_write(char* filename, uint8_t* buf, uint32_t size);
 
 // Fill names with all filenames. Returns the number of entries written, up to max_names.
-int file_list(char names[][FS_MAX_FILENAME], int max_names);
+int file_list(char names[][MAX_NAME], int max_names);
 
 // Get command line arguments to process.
 char* get_args();
+
+// Create a directory at path.
+void fs_mkdir(char* path);
+
+// List immediate children of path as a comma-separated string written into buf.
+void fs_ls(char* path, char* buf);
+
+// Read file at path into buf. Returns 0 on success, -1 if not found.
+int fs_read(char* path, char* buf);
+
+// Write buf to file at path, creating it if it doesn't exist. Returns 0 on success.
+int fs_write(char* path, char* buf);
 
 // Read len bytes starting at byte offset within the file into buf.
 // Returns 0 on success, -1 if not found, -2 if offset is past end of file.

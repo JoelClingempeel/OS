@@ -121,7 +121,7 @@ int get_pid() {
     asm volatile (
         "int $0x80"
         : "=a"(pid)
-        : "a"(11)
+        : "a"(12)
         : "memory"
     );
     return (int)pid;
@@ -132,7 +132,7 @@ int is_running(int pid) {
     asm volatile (
         "int $0x80"
         : "=a"(ret)
-        : "a"(12),
+        : "a"(13),
           "b"((uint32_t)pid)
         : "memory"
     );
@@ -172,7 +172,7 @@ int file_write(char* filename, uint8_t* buf, uint32_t size) {
     return (int)ret;
 }
 
-int file_list(char names[][FS_MAX_FILENAME], int max_names) {
+int file_list(char names[][MAX_NAME], int max_names) {
     uint32_t ret;
     asm volatile (
         "int $0x80"
@@ -190,7 +190,7 @@ void* alloc_page() {
     asm volatile (
         "int $0x80"
         : "=a"(addr)
-        : "a"(13)
+        : "a"(14)
         : "memory"
     );
     return (void*)addr;
@@ -201,12 +201,60 @@ char* get_args() {
     asm volatile (
         "int $0x80"
         : "=a"(addr)
-        : "a"(14)
+        : "a"(15)
         : "memory"
     );
     return (char*)addr;
 }
 
+void fs_mkdir(char* path) {
+    asm volatile (
+        "int $0x80"
+        :
+        : "a"(8),
+          "b"((uint32_t)path)
+        : "memory"
+    );
+}
+
+void fs_ls(char* path, char* buf) {
+    asm volatile (
+        "int $0x80"
+        :
+        : "a"(9),
+          "b"((uint32_t)path),
+          "c"((uint32_t)buf)
+        : "memory"
+    );
+}
+
+int fs_read(char* path, char* buf) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(10),
+          "b"((uint32_t)path),
+          "c"((uint32_t)buf)
+        : "memory"
+    );
+    return (int)ret;
+}
+
+int fs_write(char* path, char* buf) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(11),
+          "b"((uint32_t)path),
+          "c"((uint32_t)buf)
+        : "memory"
+    );
+    return (int)ret;
+}
+
+// TODO See if this works with new file system approach.
 int file_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
     uint32_t ret;
     asm volatile (

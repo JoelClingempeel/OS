@@ -1,4 +1,4 @@
-#include "fs.h"
+#include "files.h"
 #include "interrupts.h"
 #include "memory.h"
 #include "scheduler.h"
@@ -57,17 +57,35 @@ static uint32_t sys_clear_line(struct registers* regs) {
     return 0;
 }
 
-// static uint32_t sys_fs_read(struct registers* regs) {
-//     return (uint32_t)fs_read((char*)regs->ebx, (uint8_t*)regs->ecx);
-// }
+static uint32_t sys_fs_mkdir(struct registers* regs) {
+    make_file((char*)regs->ebx, 1);
+    return 0;
+}
 
-// static uint32_t sys_fs_write(struct registers* regs) {
-//     return (uint32_t)fs_write((char*)regs->ebx, (uint8_t*)regs->ecx, regs->edx);
-// }
+static uint32_t sys_fs_ls(struct registers* regs) {
+    char* path = (char*)regs->ebx;
+    char* buf = (char*)regs->ecx;
+    char names[8][MAX_NAME];
+    int count = lsdir(path, names, 16);
+    int pos = 0;
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; names[i][j]; j++) buf[pos++] = names[i][j];
+        if (i + 1 < count) buf[pos++] = ',';
+    }
+    buf[pos] = '\0';
+    return 0;
+}
 
-// static uint32_t sys_fs_list(struct registers* regs) {
-//     return (uint32_t)fs_list((char (*)[FS_MAX_FILENAME])regs->ebx, (int)regs->ecx);
-// }
+static uint32_t sys_fs_read(struct registers* regs) {
+    return (uint32_t)read_path((char*)regs->ebx, (char*)regs->ecx);
+}
+
+static uint32_t sys_fs_write(struct registers* regs) {
+    char* path = (char*)regs->ebx;
+    char* buf = (char*)regs->ecx;
+    make_file(path, 0);
+    return (uint32_t)write_path(path, buf);
+}
 
 static uint32_t sys_get_pid(struct registers* regs) {
     return (uint32_t)current_task_ptr->task_index;
@@ -88,10 +106,6 @@ static uint32_t sys_get_args(struct registers* regs) {
     return (uint32_t)current_task_ptr->args;
 }
 
-// static uint32_t sys_fs_read_at(struct registers* regs) {
-//     return (uint32_t)fs_read_at((char*)regs->ebx, (uint8_t*)regs->ecx, regs->edx, regs->esi);
-// }
-
 void do_syscall(struct registers* regs){
     uint32_t (*syscall_table[])(struct registers*) = {
         sys_get_ticks,     // Index 0
@@ -102,14 +116,14 @@ void do_syscall(struct registers* regs){
         sys_kill_process,  // Index 5
         sys_print_line,    // Index 6
         sys_clear_line,    // Index 7
-        // sys_fs_read,       // Index 8
-        // sys_fs_write,      // Index 9
-        // sys_fs_list,       // Index 10
-        sys_get_pid,       // Index 11
-        sys_is_running,    // Index 12
-        sys_alloc_page,    // Index 13
-        sys_get_args,      // Index 14
-        // sys_fs_read_at,    // Index 15
+        sys_fs_mkdir,      // Index 8
+        sys_fs_ls,         // Index 9
+        sys_fs_read,       // Index 10
+        sys_fs_write,      // Index 11
+        sys_get_pid,       // Index 12
+        sys_is_running,    // Index 13
+        sys_alloc_page,    // Index 14
+        sys_get_args,      // Index 15
     };
     uint32_t syscall_number = regs->eax;
     regs->eax = syscall_table[syscall_number](regs);
