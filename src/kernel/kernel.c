@@ -83,6 +83,46 @@ static void run_fs_tests(void) {
     else
         SERIAL_PRINT("FAIL: read_path -1 for missing path\n");
 
+    // Test 7: delete_dir fails on non-empty directory.
+    { char p[] = "/docs"; r = delete_dir(p); }
+    if (r == -1)
+        SERIAL_PRINT("PASS: delete_dir fails on non-empty dir\n");
+    else
+        SERIAL_PRINT("FAIL: delete_dir fails on non-empty dir\n");
+
+    // Test 8: delete_file removes /docs/readme; lsdir /docs drops to 1 entry.
+    { char p[] = "/docs/readme"; r = delete_file(p); }
+    { char p[] = "/docs"; count = lsdir(p, names, 8); }
+    if (r == 0 && count == 1)
+        SERIAL_PRINT("PASS: delete_file /docs/readme\n");
+    else
+        SERIAL_PRINT("FAIL: delete_file /docs/readme\n");
+
+    // Test 9: deleted file is no longer readable.
+    memset(buf, 0, sizeof(buf));
+    { char p[] = "/docs/readme"; r = read_path(p, buf); }
+    if (r == -1)
+        SERIAL_PRINT("PASS: deleted file not readable\n");
+    else
+        SERIAL_PRINT("FAIL: deleted file not readable\n");
+
+    // Test 10: delete_file on /docs/notes/entry1, then delete_dir /docs/notes.
+    { char p[] = "/docs/notes/entry1"; r = delete_file(p); }
+    { int r2; char p[] = "/docs/notes"; r2 = delete_dir(p); r = r2; }
+    { char p[] = "/docs"; count = lsdir(p, names, 8); }
+    if (r == 0 && count == 0)
+        SERIAL_PRINT("PASS: delete_dir /docs/notes after emptying it\n");
+    else
+        SERIAL_PRINT("FAIL: delete_dir /docs/notes after emptying it\n");
+
+    // Test 11: delete_dir /docs now that it is empty.
+    { char p[] = "/docs"; r = delete_dir(p); }
+    { char p[] = "/"; count = lsdir(p, names, 8); }
+    if (r == 0 && count == 0)
+        SERIAL_PRINT("PASS: delete_dir /docs\n");
+    else
+        SERIAL_PRINT("FAIL: delete_dir /docs\n");
+
     SERIAL_PRINT("--- DONE ---\n");
 }
 
@@ -95,7 +135,7 @@ void _kmain(void)
     init_scheduling();
 
     clear_terminal();
-    // run_fs_tests();
+    run_fs_tests();
     add_task(shell, "");
 
     while (1) {
