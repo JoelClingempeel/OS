@@ -278,6 +278,161 @@ void fs_tests() {
     while (1);
 }
 
+void prog_ls() {
+    char* path = get_args();
+    char default_path[] = "/";
+    if (!path || !path[0]) path = default_path;
+
+    user_clear_terminal();
+    int line = 0;
+
+    char buf[512];
+    buf[0] = '\0';
+    fs_ls(path, buf);
+
+    if (!buf[0]) {
+        char empty[] = "(empty)";
+        user_print_line(empty, line++);
+    } else {
+        int i = 0;
+        while (buf[i]) {
+            char name[32];
+            int j = 0;
+            while (buf[i] && buf[i] != ',') name[j++] = buf[i++];
+            name[j] = '\0';
+            if (buf[i] == ',') i++;
+            user_print_line(name, line++);
+        }
+    }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
+void prog_mkdir() {
+    char* path = get_args();
+    user_clear_terminal();
+    int line = 0;
+
+    if (!path || !path[0]) {
+        char err[] = "Usage: mkdir <path>";
+        user_print_line(err, line++);
+    } else {
+        fs_mkdir(path);
+        char done[] = "Directory created.";
+        user_print_line(done, line++);
+    }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
+void prog_rm() {
+    char* path = get_args();
+    user_clear_terminal();
+    int line = 0;
+
+    if (!path || !path[0]) {
+        char err[] = "Usage: rm <path>";
+        user_print_line(err, line++);
+    } else {
+        int r = fs_rm(path);
+        if (r == 0) {
+            char done[] = "Removed.";
+            user_print_line(done, line++);
+        } else {
+            char fail[] = "Error: file not found.";
+            user_print_line(fail, line++);
+        }
+    }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
+void prog_rmdir() {
+    char* path = get_args();
+    user_clear_terminal();
+    int line = 0;
+
+    if (!path || !path[0]) {
+        char err[] = "Usage: rmdir <path>";
+        user_print_line(err, line++);
+    } else {
+        int r = fs_rmdir(path);
+        if (r == 0) {
+            char done[] = "Directory removed.";
+            user_print_line(done, line++);
+        } else {
+            char fail[] = "Error: not found or not empty.";
+            user_print_line(fail, line++);
+        }
+    }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
+void prog_write() {
+    char* path = get_args();
+    user_clear_terminal();
+    int line = 0;
+
+    if (!path || !path[0]) {
+        char err[] = "Usage: write <path>";
+        user_print_line(err, line++);
+        shell_resume_line = line + 1;
+        kill_process(get_pid());
+        while (1);
+    }
+
+    char prompt[] = "Enter text:";
+    user_print_line(prompt, line++);
+    char* input = get(line++);
+
+    line++;
+    int r = fs_write(path, input);
+    if (r == 0) {
+        char done[] = "Written.";
+        user_print_line(done, line++);
+    } else {
+        char fail[] = "Error writing file.";
+        user_print_line(fail, line++);
+    }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
+void prog_read() {
+    char* path = get_args();
+    user_clear_terminal();
+    int line = 0;
+
+    if (!path || !path[0]) {
+        char err[] = "Usage: read <path>";
+        user_print_line(err, line++);
+    } else {
+        char* buf = (char*)alloc_page();
+        int r = fs_read(path, buf);
+        if (r == -1) {
+            char fail[] = "Error: file not found.";
+            user_print_line(fail, line++);
+        } else {
+            user_print_line(buf, line++);
+        }
+    }
+
+    shell_resume_line = line + 1;
+    kill_process(get_pid());
+    while (1);
+}
+
 void fibonacci() {
     int start_line = 25 - NUM_FIB_NUMS;
     char str_buf[10];

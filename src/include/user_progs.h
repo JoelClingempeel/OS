@@ -32,4 +32,22 @@ void write_read_junk();
 // Userland filesystem unit tests, results go to serial.
 void fs_tests();
 
+// List directory contents one per line.
+void prog_ls();
+
+// Create a directory.
+void prog_mkdir();
+
+// Remove a file.
+void prog_rm();
+
+// Remove an empty directory.
+void prog_rmdir();
+
+// Write one line of user input to a file.
+void prog_write();
+
+// Print file contents.
+void prog_read();
+
 #endif  // USER_PROGS_H
