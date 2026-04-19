@@ -213,6 +213,64 @@ void fs_tests() {
         { char m2[] = "  fs_read ret (expected -1):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
     }
 
+    // Test 7: fs_rmdir fails on non-empty directory.
+    { char p[] = "/docs"; r = fs_rmdir(p); }
+    if (r == -1) {
+        char m[] = "PASS: rmdir fails on non-empty dir"; user_print_line(m, line++);
+    } else {
+        char m[] = "FAIL: rmdir fails on non-empty dir"; user_print_line(m, line++);
+    }
+
+    // Test 8: fs_rm removes /docs/readme; ls /docs drops to 1 entry.
+    { char p[] = "/docs/readme"; r = fs_rm(p); }
+    ls_buf[0] = '\0';
+    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { int cnt = ls_count(ls_buf);
+      if (r == 0 && cnt == 1) {
+          char m[] = "PASS: fs_rm /docs/readme"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: fs_rm /docs/readme"; user_print_line(m, line++);
+          { char m2[] = "  fs_rm ret (expected 0):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+          { char m2[] = "  ls /docs count (expected 1):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+      } }
+
+    // Test 9: deleted file is no longer readable.
+    memset(buf, 0, sizeof(buf));
+    { char p[] = "/docs/readme"; r = fs_read(p, buf); }
+    if (r == -1) {
+        char m[] = "PASS: deleted file not readable"; user_print_line(m, line++);
+    } else {
+        char m[] = "FAIL: deleted file not readable"; user_print_line(m, line++);
+        { char m2[] = "  fs_read ret (expected -1):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+    }
+
+    // Test 10: fs_rm /docs/notes/entry1 then fs_rmdir /docs/notes.
+    { char p[] = "/docs/notes/entry1"; fs_rm(p); }
+    { char p[] = "/docs/notes"; r = fs_rmdir(p); }
+    ls_buf[0] = '\0';
+    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { int cnt = ls_count(ls_buf);
+      if (r == 0 && cnt == 0) {
+          char m[] = "PASS: rmdir /docs/notes after emptying"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: rmdir /docs/notes after emptying"; user_print_line(m, line++);
+          { char m2[] = "  fs_rmdir ret (expected 0):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+          { char m2[] = "  ls /docs count (expected 0):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+      } }
+
+    // Test 11: fs_rmdir /docs now that it is empty.
+    { char p[] = "/docs"; r = fs_rmdir(p); }
+    ls_buf[0] = '\0';
+    { char p[] = "/"; fs_ls(p, ls_buf); }
+    { int cnt = ls_count(ls_buf);
+      if (r == 0 && cnt == 0) {
+          char m[] = "PASS: rmdir /docs"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: rmdir /docs"; user_print_line(m, line++);
+          { char m2[] = "  fs_rmdir ret (expected 0):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
+          { char m2[] = "  ls / count (expected 0):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+      } }
+
     { char m[] = "--- DONE ---"; user_print_line(m, line++); }
 
     shell_resume_line = line + 1;

@@ -254,6 +254,30 @@ int fs_write(char* path, char* buf) {
     return (int)ret;
 }
 
+int fs_rm(char* path) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(16),
+          "b"((uint32_t)path)
+        : "memory"
+    );
+    return (int)ret;
+}
+
+int fs_rmdir(char* path) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(17),
+          "b"((uint32_t)path)
+        : "memory"
+    );
+    return (int)ret;
+}
+
 // TODO See if this works with new file system approach.
 int file_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
     uint32_t ret;

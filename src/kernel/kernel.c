@@ -135,7 +135,7 @@ void _kmain(void)
     init_scheduling();
 
     clear_terminal();
-    run_fs_tests();
+    // run_fs_tests();
     add_task(shell, "");
 
     while (1) {

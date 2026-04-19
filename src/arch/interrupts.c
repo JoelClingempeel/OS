@@ -83,11 +83,17 @@ void _idt_double_fault(uint32_t error_code) {
     video_memory[2] = 'F';
 }
 
-void _idt_gpf(uint32_t error_code) {
+void _idt_gpf(uint32_t error_code, uint32_t eip) {
+    SERIAL_PRINT("[GPF] error_code=");
+    serial_print_uint(error_code);
+    SERIAL_PRINT(" eip=");
+    serial_print_uint(eip);
+    SERIAL_PRINT("\n");
     char *video_memory = (char *)0xb8000;
     video_memory[0] = 'G';
     video_memory[2] = 'P';
     video_memory[4] = 'F';
+    while (1) {}
 }
 
 void _idt_page_fault(uint32_t error_code, uint32_t eip, uint32_t user_esp) {

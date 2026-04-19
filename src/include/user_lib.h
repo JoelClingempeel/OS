@@ -73,6 +73,12 @@ int fs_read(char* path, char* buf);
 // Write buf to file at path, creating it if it doesn't exist. Returns 0 on success.
 int fs_write(char* path, char* buf);
 
+// Delete a file at path. Returns 0 on success, -1 on failure.
+int fs_rm(char* path);
+
+// Delete an empty directory at path. Returns 0 on success, -1 on failure (including non-empty).
+int fs_rmdir(char* path);
+
 // Read len bytes starting at byte offset within the file into buf.
 // Returns 0 on success, -1 if not found, -2 if offset is past end of file.
 int file_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len);

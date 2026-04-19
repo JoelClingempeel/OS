@@ -69,9 +69,10 @@ extern _idt_gpf
 global handle_gpf
 handle_gpf:
     pushad
-    push dword [esp + 32]
+    push dword [esp + 36]   ; EIP (2nd arg, pushed first)
+    push dword [esp + 36]   ; error_code (1st arg, now shifted to esp+36)
     call _idt_gpf
-    add esp, 4
+    add esp, 8
     popad
     add esp, 4
     iretd

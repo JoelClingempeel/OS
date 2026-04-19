@@ -63,7 +63,7 @@ void _idt_timer(void);
 void _idt_double_fault(uint32_t error_code);
 
 // Handle GPF interrupt.
-void _idt_gpf(uint32_t error_code);
+void _idt_gpf(uint32_t error_code, uint32_t eip);
 
 // Handle page fault interrupt.
 void _idt_page_fault(uint32_t error_code, uint32_t eip, uint32_t user_esp);

@@ -106,25 +106,40 @@ static uint32_t sys_get_args(struct registers* regs) {
     return (uint32_t)current_task_ptr->args;
 }
 
+static uint32_t sys_fs_rm(struct registers* regs) {
+    return (uint32_t)delete_file((char*)regs->ebx);
+}
+
+static uint32_t sys_fs_rmdir(struct registers* regs) {
+    return (uint32_t)delete_dir((char*)regs->ebx);
+}
+
 void do_syscall(struct registers* regs){
-    uint32_t (*syscall_table[])(struct registers*) = {
-        sys_get_ticks,     // Index 0
-        sys_put_char,      // Index 1
-        sys_get_input,     // Index 2
-        sys_read_input,    // Index 3
-        sys_start_process, // Index 4
-        sys_kill_process,  // Index 5
-        sys_print_line,    // Index 6
-        sys_clear_line,    // Index 7
-        sys_fs_mkdir,      // Index 8
-        sys_fs_ls,         // Index 9
-        sys_fs_read,       // Index 10
-        sys_fs_write,      // Index 11
-        sys_get_pid,       // Index 12
-        sys_is_running,    // Index 13
-        sys_alloc_page,    // Index 14
-        sys_get_args,      // Index 15
-    };
     uint32_t syscall_number = regs->eax;
-    regs->eax = syscall_table[syscall_number](regs);
+    switch (syscall_number) {
+        case  0: regs->eax = sys_get_ticks(regs);     break;
+        case  1: regs->eax = sys_put_char(regs);       break;
+        case  2: regs->eax = sys_get_input(regs);      break;
+        case  3: regs->eax = sys_read_input(regs);     break;
+        case  4: regs->eax = sys_start_process(regs);  break;
+        case  5: regs->eax = sys_kill_process(regs);   break;
+        case  6: regs->eax = sys_print_line(regs);     break;
+        case  7: regs->eax = sys_clear_line(regs);     break;
+        case  8: regs->eax = sys_fs_mkdir(regs);       break;
+        case  9: regs->eax = sys_fs_ls(regs);          break;
+        case 10: regs->eax = sys_fs_read(regs);        break;
+        case 11: regs->eax = sys_fs_write(regs);       break;
+        case 12: regs->eax = sys_get_pid(regs);        break;
+        case 13: regs->eax = sys_is_running(regs);     break;
+        case 14: regs->eax = sys_alloc_page(regs);     break;
+        case 15: regs->eax = sys_get_args(regs);       break;
+        case 16: regs->eax = sys_fs_rm(regs);          break;
+        case 17: regs->eax = sys_fs_rmdir(regs);       break;
+        default:
+            SERIAL_PRINT("[syscall] bad syscall number: ");
+            serial_print_uint(syscall_number);
+            SERIAL_PRINT("\n");
+            regs->eax = (uint32_t)-1;
+            break;
+    }
 }
