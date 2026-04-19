@@ -67,9 +67,6 @@ static void free_sector_chain(uint32_t sector) {
 }
 
 void fs_init(void) {
-    uint8_t bitmap[SECTOR_SIZE];
-    for (int i = 0; i < SECTOR_SIZE; i++) bitmap[i] = 0;
-    disk_write(BITMAP_SECTOR, bitmap);
     bitmap_set_sector(BITMAP_SECTOR);
     bitmap_set_sector(ROOT_SECTOR);
 }
