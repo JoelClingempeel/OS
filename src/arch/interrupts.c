@@ -11,7 +11,7 @@ struct IDTPointer init_idt() {
     entry->offset_high = idt80_addr >> 16;
     entry->selector = 0x08;
     entry->zero = 0;
-    entry->type_attr = 0xEF;
+    entry->type_attr = 0xEE; // interrupt gate (DPL=3 so ring-3 can call, clears IF so timer can't fire during syscall)
 
     // Timer Interrupt (IRQ 0 -> Vector 32)
     struct IDTEntry* timer_entry = &idt[0x20];
@@ -90,7 +90,7 @@ void _idt_gpf(uint32_t error_code) {
     video_memory[4] = 'F';
 }
 
-void _idt_page_fault(uint32_t error_code) {
+void _idt_page_fault(uint32_t error_code, uint32_t eip, uint32_t user_esp) {
     char *video_memory = (char *)0xb8000;
     video_memory[0] = 'P';
     video_memory[2] = 'F';
@@ -102,6 +102,10 @@ void _idt_page_fault(uint32_t error_code) {
     serial_print_uint(error_code);
     SERIAL_PRINT(" cr2=0x");
     serial_print_uint(cr2);
+    SERIAL_PRINT(" eip=0x");
+    serial_print_uint(eip);
+    SERIAL_PRINT(" user_esp=0x");
+    serial_print_uint(user_esp);
     if (error_code & 1) { char m[] = " protection-violation"; serial_print(m); }
     else                { char m[] = " not-present";          serial_print(m); }
     if (error_code & 2) { char m[] = " write"; serial_print(m); }

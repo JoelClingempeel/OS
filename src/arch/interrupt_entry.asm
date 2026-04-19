@@ -80,9 +80,11 @@ extern _idt_page_fault
 global handle_page_fault
 handle_page_fault:
     pushad
-    push dword [esp + 32]
+    push dword [esp + 48]   ; user ESP  (3rd arg)
+    push dword [esp + 40]   ; EIP       (2nd arg) — offsets shift +4 after first push
+    push dword [esp + 40]   ; error_code (1st arg) — offsets shift +8 after two pushes
     call _idt_page_fault
-    add esp, 4
+    add esp, 12
     popad
     add esp, 4
     iretd

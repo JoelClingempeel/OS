@@ -271,6 +271,7 @@ int file_read_at(char* filename, uint8_t* buf, uint32_t offset, uint32_t len) {
 }
 
 void uint_to_ascii(uint32_t num, char* buffer) {
+    if (num == 0) { buffer[0] = '0'; buffer[1] = '\0'; return; }
     uint8_t digits[10];
     for (int i = 0; i < 10; i++) {
         digits[i] = num % 10;

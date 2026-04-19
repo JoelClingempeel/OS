@@ -66,7 +66,7 @@ void _idt_double_fault(uint32_t error_code);
 void _idt_gpf(uint32_t error_code);
 
 // Handle page fault interrupt.
-void _idt_page_fault(uint32_t error_code);
+void _idt_page_fault(uint32_t error_code, uint32_t eip, uint32_t user_esp);
 
 // Remap PIC so hardware interrupts can be properly handled.
 void pic_remap(int offset1, int offset2);

@@ -27,7 +27,7 @@ int add_task(void (*entry_point)(void), char* args){
     uint32_t kstack_page = vram_border;
     vram_border += STACK_PAGES * PAGE_SIZE;
     for (int p = 0; p < STACK_PAGES; p++)
-        map_page(kstack_page + p * PAGE_SIZE, FLAG_PRESENT | FLAG_RW | FLAG_USER); // TODO: remove FLAG_USER once user/kernel memory protection is sorted out
+        map_page(kstack_page + p * PAGE_SIZE, FLAG_PRESENT | FLAG_RW);
 
     uint32_t ustack_page = vram_border;
     vram_border += STACK_PAGES * PAGE_SIZE;
