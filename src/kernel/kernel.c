@@ -89,6 +89,7 @@ static void run_fs_tests(void) {
 void _kmain(void)
 {
     init_mem();
+    fs_init();
     configure_interrupts();
     init_tss();
     init_scheduling();

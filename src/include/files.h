@@ -6,6 +6,8 @@
 
 #define MAX_NAME 64
 
+void fs_init(void);
+
 void read_file(uint32_t sector_num, char* buffer);
 void write_file(uint32_t sector_num, char* buffer);
 

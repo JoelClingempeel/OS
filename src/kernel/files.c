@@ -2,6 +2,8 @@
 #include "utils.h"
 
 #define DIR_BUF_SIZE 508
+#define BITMAP_SECTOR 0
+#define ROOT_SECTOR   1
 
 static void uint_to_str(uint32_t n, char* out) {
     if (n == 0) { out[0] = '0'; out[1] = '\0'; return; }
@@ -37,17 +39,28 @@ void read_file(uint32_t sector_num, char* buffer) {
     } while (current != 0);
 }
 
-// TODO Get a better bookkeeping mechanism.
+static void bitmap_set_sector(uint32_t sector_num) {
+    uint8_t bitmap[SECTOR_SIZE];
+    disk_read(BITMAP_SECTOR, bitmap);
+    bitmap[sector_num / 8] |= (1 << (sector_num % 8));
+    disk_write(BITMAP_SECTOR, bitmap);
+}
+
+void fs_init(void) {
+    uint8_t bitmap[SECTOR_SIZE];
+    for (int i = 0; i < SECTOR_SIZE; i++) bitmap[i] = 0;
+    disk_write(BITMAP_SECTOR, bitmap);
+    bitmap_set_sector(BITMAP_SECTOR);
+    bitmap_set_sector(ROOT_SECTOR);
+}
+
 static uint32_t find_empty_sector(uint32_t start) {
-    uint8_t sector[SECTOR_SIZE];
-    for (uint32_t i = start; ; i++) {
-        disk_read(i, sector);
-        int empty = 1;
-        for (int j = 0; j < SECTOR_SIZE; j++) {
-            if (sector[j] != 0) { empty = 0; break; }
-        }
-        if (empty) return i;
+    uint8_t bitmap[SECTOR_SIZE];
+    disk_read(BITMAP_SECTOR, bitmap);
+    for (uint32_t i = start; i < SECTOR_SIZE * 8; i++) {
+        if (!(bitmap[i / 8] & (1 << (i % 8)))) return i;
     }
+    return 0xFFFFFFFF;
 }
 
 void write_file(uint32_t sector_num, char* buffer) {
@@ -64,6 +77,7 @@ void write_file(uint32_t sector_num, char* buffer) {
         }
         if (full) {
             uint32_t next = find_empty_sector(current + 1);
+            bitmap_set_sector(next);
             *(uint32_t*)sector = next;
             disk_write(current, sector);
             current = next;
@@ -141,11 +155,11 @@ static uint32_t lookup_path(char* path) {
     SERIAL_PRINT("\"\n");
 
     if (path[0] == '/' && path[1] == '\0') {
-        SERIAL_PRINT("[files]   -> root (sector 0)\n");
-        return 0;
+        SERIAL_PRINT("[files]   -> root (sector 1)\n");
+        return ROOT_SECTOR;
     }
 
-    uint32_t current = 0;
+    uint32_t current = ROOT_SECTOR;
     char* p = path;
     if (*p == '/') p++;
 
@@ -246,8 +260,8 @@ void make_file(char* path, int is_dir) {
 
     uint32_t parent_sector;
     if (last_slash == 0) {
-        parent_sector = 0; // parent is root
-        SERIAL_PRINT("[files]   parent=root (sector 0)\n");
+        parent_sector = ROOT_SECTOR;
+        SERIAL_PRINT("[files]   parent=root (sector 1)\n");
     } else {
         char parent_path[256];
         for (int i = 0; i < last_slash; i++) parent_path[i] = path[i];
@@ -271,7 +285,8 @@ void make_file(char* path, int is_dir) {
         return;
     }
 
-    uint32_t new_sector = find_empty_sector(1);
+    uint32_t new_sector = find_empty_sector(2);
+    bitmap_set_sector(new_sector);
     SERIAL_PRINT("[files]   new_sector=");
     serial_print_uint(new_sector);
     SERIAL_PRINT("\n");
