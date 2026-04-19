@@ -61,6 +61,12 @@ int file_list(char names[][MAX_NAME], int max_names);
 // Get command line arguments to process.
 char* get_args();
 
+// Split an absolute path into parent directory and final component.
+void split_path(char* path, char* parent_out, char* name_out);
+
+// Returns 1 if the directory at path exists, 0 otherwise.
+int dir_exists(char* path);
+
 // Create a directory at path.
 void fs_mkdir(char* path);
 

@@ -207,6 +207,49 @@ char* get_args() {
     return (char*)addr;
 }
 
+void split_path(char* path, char* parent_out, char* name_out) {
+    int len = strlen(path);
+    int last_slash = 0;
+    for (int i = 0; i < len; i++)
+        if (path[i] == '/') last_slash = i;
+
+    int j = 0;
+    for (int i = last_slash + 1; i < len; i++)
+        name_out[j++] = path[i];
+    name_out[j] = '\0';
+
+    if (last_slash == 0) {
+        parent_out[0] = '/';
+        parent_out[1] = '\0';
+    } else {
+        for (int i = 0; i < last_slash; i++)
+            parent_out[i] = path[i];
+        parent_out[last_slash] = '\0';
+    }
+}
+
+int dir_exists(char* path) {
+    if (path[0] == '/' && path[1] == '\0') return 1;
+
+    char parent[256];
+    char name[32];
+    split_path(path, parent, name);
+
+    char buf[512];
+    buf[0] = '\0';
+    fs_ls(parent, buf);
+
+    int i = 0;
+    while (buf[i]) {
+        int j = 0;
+        while (name[j] && buf[i+j] && buf[i+j] != ',' && name[j] == buf[i+j]) j++;
+        if (!name[j] && (!buf[i+j] || buf[i+j] == ',')) return 1;
+        while (buf[i] && buf[i] != ',') i++;
+        if (buf[i] == ',') i++;
+    }
+    return 0;
+}
+
 void fs_mkdir(char* path) {
     asm volatile (
         "int $0x80"
