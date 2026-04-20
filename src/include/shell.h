@@ -6,10 +6,12 @@
 #include "user_progs.h"
 
 
+#define MAX_BG_INSTANCES 4
+
 typedef struct {
     char name[32];
     void (*func)(void);
-    int pid;
+    int pids[MAX_BG_INSTANCES];
     int foreground;  // 1 = shell waits for exit before resuming, 0 = background
 } program;
 
