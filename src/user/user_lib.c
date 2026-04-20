@@ -53,6 +53,24 @@ void delay(int delay_length){
     }
 }
 
+char* get_prefilled(uint32_t line, char* content) {
+    uint32_t str_addr;
+    asm volatile (
+        "int $0x80"
+        :
+        : "a"(18),
+          "b"(line),
+          "c"((uint32_t)content)
+        : "memory"
+    );
+    while (1) {
+        str_addr = read_user_input();
+        if (str_addr != 0) break;
+        delay(1);
+    }
+    return (char*)str_addr;
+}
+
 char* get(uint32_t line){
     uint32_t str_addr;
     get_user_input(line);

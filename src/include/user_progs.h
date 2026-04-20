@@ -39,4 +39,7 @@ void prog_write();
 // Print file contents.
 void prog_read();
 
+// Text editor.
+void editor();
+
 #endif  // USER_PROGS_H

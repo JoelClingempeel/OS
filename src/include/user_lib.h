@@ -19,6 +19,9 @@ void delay(int delay_length);
 // Get user input from the terminal.
 char* get(uint32_t line);
 
+// Get user input pre-filled with existing content.
+char* get_prefilled(uint32_t line, char* content);
+
 // Start user program and get PID.
 uint32_t start_process(void (*func_addr)(void), char* args);
 

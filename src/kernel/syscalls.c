@@ -114,6 +114,24 @@ static uint32_t sys_fs_rmdir(struct registers* regs) {
     return (uint32_t)delete_dir((char*)regs->ebx);
 }
 
+static uint32_t sys_get_input_prefilled(struct registers* regs) {
+    char* content = (char*)regs->ecx;
+    memset(&tty.input_buffer, 0, 1024);
+    strcpy(tty.input_buffer, content);
+    tty.index = (uint16_t)strlen(content);
+    tty.active = 1;
+    tty.row = regs->ebx;
+    tty.task_index = current_task_ptr->task_index;
+    char input_str[] = TTY_GREETING;
+    printk_line(input_str, regs->ebx);
+    char* video_memory = (char*)0xb8000;
+    for (uint16_t i = 0; i < tty.index; i++) {
+        video_memory[2*i + 160*tty.row + 2*TTY_GREET_LEN] = content[i];
+    }
+    update_cursor(TTY_GREET_LEN + tty.index, tty.row);
+    return 0;
+}
+
 void do_syscall(struct registers* regs){
     uint32_t syscall_number = regs->eax;
     switch (syscall_number) {
@@ -134,7 +152,8 @@ void do_syscall(struct registers* regs){
         case 14: regs->eax = sys_alloc_page(regs);     break;
         case 15: regs->eax = sys_get_args(regs);       break;
         case 16: regs->eax = sys_fs_rm(regs);          break;
-        case 17: regs->eax = sys_fs_rmdir(regs);       break;
+        case 17: regs->eax = sys_fs_rmdir(regs);          break;
+        case 18: regs->eax = sys_get_input_prefilled(regs); break;
         default:
             SERIAL_PRINT("[syscall] bad syscall number: ");
             serial_print_uint(syscall_number);

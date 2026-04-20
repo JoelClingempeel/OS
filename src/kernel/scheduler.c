@@ -1,6 +1,6 @@
 #include "scheduler.h"
 
-#define STACK_PAGES 1
+#define STACK_PAGES 2
 
 task_struct* current_task_ptr;
 task_struct tasks[MAX_TASKS];
@@ -41,9 +41,15 @@ int add_task(void (*entry_point)(void), char* args){
     new_task->active = 1;
     new_task->task_index = i;
 
+    // Push sentinel return address onto the user stack so that if a task entry
+    // function returns without calling kill_process, ret goes to 0x0 (an
+    // unmapped address) rather than reading one word past the top of the page.
+    uint32_t* user_stack_top = (uint32_t*)(ustack_page + STACK_PAGES * PAGE_SIZE);
+    *(--user_stack_top) = 0;
+
     uint32_t* new_task_ptr = (uint32_t*)new_task->kstack_top;
     *(--new_task_ptr) = 0x23;                          // SS (User Data)
-    *(--new_task_ptr) = ustack_page + STACK_PAGES * PAGE_SIZE;  // ESP (top of user stack)
+    *(--new_task_ptr) = (uint32_t)user_stack_top;      // ESP (sentinel already pushed)
     *(--new_task_ptr) = 0x202;                    // EFLAGS (Interrupts enabled)
     *(--new_task_ptr) = 0x1B;                     // CS (User Code)
     *(--new_task_ptr) = (uint32_t)entry_point;    // EIP (Where to start)

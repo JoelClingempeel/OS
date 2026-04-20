@@ -13,10 +13,11 @@ void shell(){
     program p_rmdir   = {"rmdir",    prog_rmdir, {0}, 1};
     program p_write   = {"write",    prog_write, {0}, 1};
     program p_read    = {"read",     prog_read,  {0}, 1};
+    program p_editor  = {"editor",   editor,     {0}, 1};
     program *programs[] = {
         &p_blinky, &p_blinky2, &p_blinky3, &p_fib,
         &p_fs_tests, &p_ls, &p_mkdir, &p_rm, &p_rmdir,
-        &p_write, &p_read
+        &p_write, &p_read, &p_editor
     };
 
     char cwd[256];
