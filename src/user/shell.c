@@ -6,7 +6,6 @@ void shell(){
     program p_blinky2 = {"blinky2", blinky2, 0, 0};
     program p_blinky3 = {"blinky3", blinky3, 0, 0};
     program p_fib = {"fib", fibonacci, 0, 0};
-    program p_write_read_junk = {"writereadjunk", write_read_junk, 0, 1};
     program p_fs_tests = {"fstests", fs_tests, 0, 1};
     program p_ls = {"ls", prog_ls, 0, 1};
     program p_mkdir = {"mkdir", prog_mkdir, 0, 1};
@@ -19,7 +18,6 @@ void shell(){
         &p_blinky2,
         &p_blinky3,
         &p_fib,
-        &p_write_read_junk,
         &p_fs_tests,
         &p_ls,
         &p_mkdir,

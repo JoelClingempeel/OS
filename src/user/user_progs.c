@@ -33,25 +33,6 @@ void blinky3() {
     }
 }
 
-void write_read_junk() {
-    // Write 600 bytes of junk followed by a message into "test".
-    uint8_t* wbuf = (uint8_t*)alloc_page();
-    for (int i = 0; i < 600; i++) wbuf[i] = 'X';
-    char msg[] = "Hello from offset 600!";
-    uint32_t msg_len = strlen(msg) + 1;
-    memcpy(wbuf + 600, msg, msg_len);
-    char filename[] = "test";
-    file_write(filename, wbuf, 600 + msg_len);
-
-    // Read back just the message and display it.
-    uint8_t rbuf[32];
-    file_read_at(filename, rbuf, 600, msg_len);
-    user_print_line((char*)rbuf, 0);
-
-    shell_resume_line = 2;
-    kill_process(get_pid());
-    while (1);
-}
 
 static int ls_count(char* buf) {
     if (!buf[0]) return 0;
@@ -233,6 +214,24 @@ void fs_tests() {
       } }
 
     { char p[] = "/fstests"; fs_rmdir(p); }
+
+    // Test 12: multisector write/read (600 bytes junk + message spanning 2 sectors).
+    { char* wbuf = (char*)alloc_page();
+      for (int i = 0; i < 600; i++) wbuf[i] = 'A';
+      char msg[] = "Hello from offset 600!";
+      memcpy(wbuf + 600, msg, strlen(msg) + 1);
+      char p[] = "/testfile";
+      fs_write(p, wbuf); }
+    { char* rbuf = (char*)alloc_page();
+      char p[] = "/testfile";
+      r = fs_read(p, rbuf);
+      fs_rm(p);
+      char expected[] = "Hello from offset 600!";
+      if (r == 0 && strcmp(rbuf + 600, expected) == 0) {
+          char m[] = "PASS: multisector write/read"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: multisector write/read"; user_print_line(m, line++);
+      } }
 
     { char m[] = "--- DONE ---"; user_print_line(m, line++); }
 
