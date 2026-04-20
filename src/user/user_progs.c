@@ -94,77 +94,79 @@ void fs_tests() {
 
     { char m[] = "--- USERLAND FS TESTS ---"; user_print_line(m, line++); }
 
-    // Test 1: mkdir /docs appears in ls /.
-    { char p[] = "/docs"; fs_mkdir(p); }
+    { char p[] = "/fstests"; fs_mkdir(p); }
+
+    // Test 1: mkdir /fstests/docs appears in ls /fstests.
+    { char p[] = "/fstests/docs"; fs_mkdir(p); }
     ls_buf[0] = '\0';
-    { char p[] = "/"; fs_ls(p, ls_buf); }
+    { char p[] = "/fstests"; fs_ls(p, ls_buf); }
     { char name[] = "docs";
       if (ls_contains(ls_buf, name)) {
-          char m[] = "PASS: /docs in ls /"; user_print_line(m, line++);
+          char m[] = "PASS: /fstests/docs in ls /fstests"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: /docs in ls /"; user_print_line(m, line++);
-          { char m2[] = "  ls / returned:"; user_print_line(m2, line++); }
+          char m[] = "FAIL: /fstests/docs in ls /fstests"; user_print_line(m, line++);
+          { char m2[] = "  ls /fstests returned:"; user_print_line(m2, line++); }
           user_print_line(ls_buf[0] ? ls_buf : "(empty)", line++);
       } }
 
-    // Test 2: mkdir /docs/notes appears in ls /docs.
-    { char p[] = "/docs/notes"; fs_mkdir(p); }
+    // Test 2: mkdir /fstests/docs/notes appears in ls /fstests/docs.
+    { char p[] = "/fstests/docs/notes"; fs_mkdir(p); }
     ls_buf[0] = '\0';
-    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { char p[] = "/fstests/docs"; fs_ls(p, ls_buf); }
     { char name[] = "notes";
       if (ls_contains(ls_buf, name)) {
-          char m[] = "PASS: /docs/notes in ls /docs"; user_print_line(m, line++);
+          char m[] = "PASS: /fstests/docs/notes in ls /fstests/docs"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: /docs/notes in ls /docs"; user_print_line(m, line++);
-          { char m2[] = "  ls /docs returned:"; user_print_line(m2, line++); }
+          char m[] = "FAIL: /fstests/docs/notes in ls /fstests/docs"; user_print_line(m, line++);
+          { char m2[] = "  ls /fstests/docs returned:"; user_print_line(m2, line++); }
           user_print_line(ls_buf[0] ? ls_buf : "(empty)", line++);
       } }
 
-    // Test 3: write then read /docs/readme.
-    { char p[] = "/docs/readme"; char c[] = "hello from readme"; r = fs_write(p, c); }
+    // Test 3: write then read /fstests/docs/readme.
+    { char p[] = "/fstests/docs/readme"; char c[] = "hello from readme"; r = fs_write(p, c); }
     { char m[] = "  T3 fs_write ret:"; user_print_line(m, line); print_int(r, line + 1); line += 2; }
     memset(buf, 0, sizeof(buf));
-    { char p[] = "/docs/readme"; r = fs_read(p, buf); }
+    { char p[] = "/fstests/docs/readme"; r = fs_read(p, buf); }
     { char expected[] = "hello from readme";
       if (r == 0 && strcmp(buf, expected) == 0) {
-          char m[] = "PASS: write/read /docs/readme"; user_print_line(m, line++);
+          char m[] = "PASS: write/read /fstests/docs/readme"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: write/read /docs/readme"; user_print_line(m, line++);
+          char m[] = "FAIL: write/read /fstests/docs/readme"; user_print_line(m, line++);
           { char m2[] = "  fs_read ret:"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
           { char m2[] = "  buf:"; user_print_line(m2, line++); }
           user_print_line(buf[0] ? buf : "(empty)", line++);
       } }
 
-    // Test 4: write then read /docs/notes/entry1.
-    { char p[] = "/docs/notes/entry1"; char c[] = "first note"; r = fs_write(p, c); }
+    // Test 4: write then read /fstests/docs/notes/entry1.
+    { char p[] = "/fstests/docs/notes/entry1"; char c[] = "first note"; r = fs_write(p, c); }
     { char m[] = "  T4 fs_write ret:"; user_print_line(m, line); print_int(r, line + 1); line += 2; }
     memset(buf, 0, sizeof(buf));
-    { char p[] = "/docs/notes/entry1"; r = fs_read(p, buf); }
+    { char p[] = "/fstests/docs/notes/entry1"; r = fs_read(p, buf); }
     { char expected[] = "first note";
       if (r == 0 && strcmp(buf, expected) == 0) {
-          char m[] = "PASS: write/read /docs/notes/entry1"; user_print_line(m, line++);
+          char m[] = "PASS: write/read /fstests/docs/notes/entry1"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: write/read /docs/notes/entry1"; user_print_line(m, line++);
+          char m[] = "FAIL: write/read /fstests/docs/notes/entry1"; user_print_line(m, line++);
           { char m2[] = "  fs_read ret:"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
           { char m2[] = "  buf:"; user_print_line(m2, line++); }
           user_print_line(buf[0] ? buf : "(empty)", line++);
       } }
 
-    // Test 5: ls /docs has 2 entries.
+    // Test 5: ls /fstests/docs has 2 entries.
     ls_buf[0] = '\0';
-    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { char p[] = "/fstests/docs"; fs_ls(p, ls_buf); }
     { int cnt = ls_count(ls_buf);
       if (cnt == 2) {
-          char m[] = "PASS: ls /docs has 2 entries"; user_print_line(m, line++);
+          char m[] = "PASS: ls /fstests/docs has 2 entries"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: ls /docs has 2 entries"; user_print_line(m, line++);
+          char m[] = "FAIL: ls /fstests/docs has 2 entries"; user_print_line(m, line++);
           { char m2[] = "  count:"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
-          { char m2[] = "  ls /docs:"; user_print_line(m2, line++); }
+          { char m2[] = "  ls /fstests/docs:"; user_print_line(m2, line++); }
           user_print_line(ls_buf[0] ? ls_buf : "(empty)", line++);
       } }
 
     // Test 6: fs_read returns -1 for a missing path.
-    { char p[] = "/does/not/exist"; r = fs_read(p, buf); }
+    { char p[] = "/fstests/does/not/exist"; r = fs_read(p, buf); }
     if (r == -1) {
         char m[] = "PASS: fs_read -1 for missing path"; user_print_line(m, line++);
     } else {
@@ -173,29 +175,29 @@ void fs_tests() {
     }
 
     // Test 7: fs_rmdir fails on non-empty directory.
-    { char p[] = "/docs"; r = fs_rmdir(p); }
+    { char p[] = "/fstests/docs"; r = fs_rmdir(p); }
     if (r == -1) {
         char m[] = "PASS: rmdir fails on non-empty dir"; user_print_line(m, line++);
     } else {
         char m[] = "FAIL: rmdir fails on non-empty dir"; user_print_line(m, line++);
     }
 
-    // Test 8: fs_rm removes /docs/readme; ls /docs drops to 1 entry.
-    { char p[] = "/docs/readme"; r = fs_rm(p); }
+    // Test 8: fs_rm removes /fstests/docs/readme; ls /fstests/docs drops to 1 entry.
+    { char p[] = "/fstests/docs/readme"; r = fs_rm(p); }
     ls_buf[0] = '\0';
-    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { char p[] = "/fstests/docs"; fs_ls(p, ls_buf); }
     { int cnt = ls_count(ls_buf);
       if (r == 0 && cnt == 1) {
-          char m[] = "PASS: fs_rm /docs/readme"; user_print_line(m, line++);
+          char m[] = "PASS: fs_rm /fstests/docs/readme"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: fs_rm /docs/readme"; user_print_line(m, line++);
+          char m[] = "FAIL: fs_rm /fstests/docs/readme"; user_print_line(m, line++);
           { char m2[] = "  fs_rm ret (expected 0):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
-          { char m2[] = "  ls /docs count (expected 1):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+          { char m2[] = "  ls /fstests/docs count (expected 1):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
       } }
 
     // Test 9: deleted file is no longer readable.
     memset(buf, 0, sizeof(buf));
-    { char p[] = "/docs/readme"; r = fs_read(p, buf); }
+    { char p[] = "/fstests/docs/readme"; r = fs_read(p, buf); }
     if (r == -1) {
         char m[] = "PASS: deleted file not readable"; user_print_line(m, line++);
     } else {
@@ -203,32 +205,34 @@ void fs_tests() {
         { char m2[] = "  fs_read ret (expected -1):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
     }
 
-    // Test 10: fs_rm /docs/notes/entry1 then fs_rmdir /docs/notes.
-    { char p[] = "/docs/notes/entry1"; fs_rm(p); }
-    { char p[] = "/docs/notes"; r = fs_rmdir(p); }
+    // Test 10: fs_rm /fstests/docs/notes/entry1 then fs_rmdir /fstests/docs/notes.
+    { char p[] = "/fstests/docs/notes/entry1"; fs_rm(p); }
+    { char p[] = "/fstests/docs/notes"; r = fs_rmdir(p); }
     ls_buf[0] = '\0';
-    { char p[] = "/docs"; fs_ls(p, ls_buf); }
+    { char p[] = "/fstests/docs"; fs_ls(p, ls_buf); }
     { int cnt = ls_count(ls_buf);
       if (r == 0 && cnt == 0) {
-          char m[] = "PASS: rmdir /docs/notes after emptying"; user_print_line(m, line++);
+          char m[] = "PASS: rmdir /fstests/docs/notes after emptying"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: rmdir /docs/notes after emptying"; user_print_line(m, line++);
+          char m[] = "FAIL: rmdir /fstests/docs/notes after emptying"; user_print_line(m, line++);
           { char m2[] = "  fs_rmdir ret (expected 0):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
-          { char m2[] = "  ls /docs count (expected 0):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+          { char m2[] = "  ls /fstests/docs count (expected 0):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
       } }
 
-    // Test 11: fs_rmdir /docs now that it is empty.
-    { char p[] = "/docs"; r = fs_rmdir(p); }
+    // Test 11: fs_rmdir /fstests/docs now that it is empty.
+    { char p[] = "/fstests/docs"; r = fs_rmdir(p); }
     ls_buf[0] = '\0';
-    { char p[] = "/"; fs_ls(p, ls_buf); }
+    { char p[] = "/fstests"; fs_ls(p, ls_buf); }
     { int cnt = ls_count(ls_buf);
       if (r == 0 && cnt == 0) {
-          char m[] = "PASS: rmdir /docs"; user_print_line(m, line++);
+          char m[] = "PASS: rmdir /fstests/docs"; user_print_line(m, line++);
       } else {
-          char m[] = "FAIL: rmdir /docs"; user_print_line(m, line++);
+          char m[] = "FAIL: rmdir /fstests/docs"; user_print_line(m, line++);
           { char m2[] = "  fs_rmdir ret (expected 0):"; user_print_line(m2, line); print_int(r, line + 1); line += 2; }
-          { char m2[] = "  ls / count (expected 0):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
+          { char m2[] = "  ls /fstests count (expected 0):"; user_print_line(m2, line); print_int(cnt, line + 1); line += 2; }
       } }
+
+    { char p[] = "/fstests"; fs_rmdir(p); }
 
     { char m[] = "--- DONE ---"; user_print_line(m, line++); }
 
