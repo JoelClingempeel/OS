@@ -22,10 +22,10 @@ void blinky3();
 void fibonacci();
 
 // Gets input from the terminal and writes it to the file "foo".
-void write_foo();
+// void write_foo();
 
 // Reads the file "foo" and prints its contents to the terminal.
-void read_foo();
+// void read_foo();
 
 // Writes 600 bytes of junk followed by a message to "test", then reads the message back.
 void write_read_junk();

@@ -5,27 +5,6 @@
 #define BITMAP_SECTOR 0
 #define ROOT_SECTOR   1
 
-static void uint_to_str(uint32_t n, char* out) {
-    if (n == 0) { out[0] = '0'; out[1] = '\0'; return; }
-    char tmp[12];
-    int i = 0;
-    while (n > 0) { tmp[i++] = '0' + (n % 10); n /= 10; }
-    int j = 0;
-    while (i > 0) out[j++] = tmp[--i];
-    out[j] = '\0';
-}
-
-static uint32_t str_to_uint(char* s) {
-    uint32_t n = 0;
-    while (*s >= '0' && *s <= '9') n = n * 10 + (*s++ - '0');
-    return n;
-}
-
-static int str_eq(const char* a, const char* b) {
-    while (*a && *a == *b) { a++; b++; }
-    return *a == *b;
-}
-
 
 void read_file(uint32_t sector_num, char* buffer) {
     uint8_t sector[SECTOR_SIZE];
@@ -153,7 +132,7 @@ static uint32_t lookup_in_dir(uint32_t dir_sector, char* name, int* is_dir) {
         //  serial_print_uint(sector);
         //  SERIAL_PRINT("\n");
 
-        if (str_eq(entry_name, name)) {
+        if (!strcmp(entry_name, name)) {
             *is_dir = dir_flag;
             //  SERIAL_PRINT("[files]   FOUND sector=");
             //  serial_print_uint(sector);
@@ -189,7 +168,7 @@ static void tombstone_in_parent(uint32_t parent_sector, char* name) {
         while (*p && *p != '\n') p++;
         if (*p) p++;
 
-        if (str_eq(entry_name, name)) {
+        if (!strcmp(entry_name, name)) {
             entry_start[0] = '!';
             write_file(parent_sector, buf);
             return;

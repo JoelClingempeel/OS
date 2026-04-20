@@ -122,6 +122,22 @@ void serial_print(const char* s) {
     }
 }
 
+void uint_to_str(uint32_t n, char* out) {
+    if (n == 0) { out[0] = '0'; out[1] = '\0'; return; }
+    char tmp[12];
+    int i = 0;
+    while (n > 0) { tmp[i++] = '0' + (n % 10); n /= 10; }
+    int j = 0;
+    while (i > 0) out[j++] = tmp[--i];
+    out[j] = '\0';
+}
+
+uint32_t str_to_uint(char* s) {
+    uint32_t n = 0;
+    while (*s >= '0' && *s <= '9') n = n * 10 + (*s++ - '0');
+    return n;
+}
+
 void serial_print_uint(uint32_t num) {
     char digits[10];
     int i = 0;

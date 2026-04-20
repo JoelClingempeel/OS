@@ -54,4 +54,12 @@ void serial_print_uint(uint32_t num);
 // Write a string literal to COM1 serial without relying on .rodata.
 #define SERIAL_PRINT(str) do { char _m[] = str; serial_print(_m); } while(0)
 
+// Converts a uint to a string.
+void uint_to_str(uint32_t n, char* out);
+
+// Converts a string ot a uint.
+uint32_t str_to_uint(char* s);
+
+int str_eq(const char* a, const char* b);
+
 #endif  // UTILS_H

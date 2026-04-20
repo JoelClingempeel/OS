@@ -6,8 +6,10 @@
 
 #define MAX_NAME 64
 
+// Initiate file system.
 void fs_init(void);
 
+// Read from and write to a file by sector number.
 void read_file(uint32_t sector_num, char* buffer);
 void write_file(uint32_t sector_num, char* buffer);
 
