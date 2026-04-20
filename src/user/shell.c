@@ -63,6 +63,7 @@ void shell(){
                 }
                 entered_program = 1;
                 if (programs[i]->pid == 0) {
+                    shell_start_line = index;
                     programs[i]->pid = start_process(programs[i]->func, args);
                     if (programs[i]->foreground) {
                         wait_for(programs[i]->pid);

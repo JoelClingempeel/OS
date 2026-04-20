@@ -6,6 +6,7 @@
 // Foreground programs write the next available terminal line here before exiting
 // so the shell knows where to place its next prompt.
 extern int shell_resume_line;
+extern int shell_start_line;
 
 
 // Make a red N repeatedly appear and disappear.

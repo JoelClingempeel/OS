@@ -3,6 +3,7 @@
 #include "utils.h"
 
 int shell_resume_line = 0;
+int shell_start_line = 0;
 
 
 void blinky() {
@@ -273,7 +274,7 @@ void fs_tests() {
 
     { char m[] = "--- DONE ---"; user_print_line(m, line++); }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
@@ -283,8 +284,7 @@ void prog_ls() {
     char default_path[] = "/";
     if (!path || !path[0]) path = default_path;
 
-    user_clear_terminal();
-    int line = 0;
+    int line = shell_start_line;
 
     char buf[512];
     buf[0] = '\0';
@@ -305,15 +305,14 @@ void prog_ls() {
         }
     }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
 
 void prog_mkdir() {
     char* path = get_args();
-    user_clear_terminal();
-    int line = 0;
+    int line = shell_start_line;
 
     if (!path || !path[0]) {
         char err[] = "Usage: mkdir <path>";
@@ -324,15 +323,14 @@ void prog_mkdir() {
         user_print_line(done, line++);
     }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
 
 void prog_rm() {
     char* path = get_args();
-    user_clear_terminal();
-    int line = 0;
+    int line = shell_start_line;
 
     if (!path || !path[0]) {
         char err[] = "Usage: rm <path>";
@@ -348,15 +346,14 @@ void prog_rm() {
         }
     }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
 
 void prog_rmdir() {
     char* path = get_args();
-    user_clear_terminal();
-    int line = 0;
+    int line = shell_start_line;
 
     if (!path || !path[0]) {
         char err[] = "Usage: rmdir <path>";
@@ -372,20 +369,19 @@ void prog_rmdir() {
         }
     }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
 
 void prog_write() {
     char* path = get_args();
-    user_clear_terminal();
-    int line = 0;
+    int line = shell_start_line;
 
     if (!path || !path[0]) {
         char err[] = "Usage: write <path>";
         user_print_line(err, line++);
-        shell_resume_line = line + 1;
+        shell_resume_line = line;
         kill_process(get_pid());
         while (1);
     }
@@ -394,7 +390,6 @@ void prog_write() {
     user_print_line(prompt, line++);
     char* input = get(line++);
 
-    line++;
     int r = fs_write(path, input);
     if (r == 0) {
         char done[] = "Written.";
@@ -404,15 +399,14 @@ void prog_write() {
         user_print_line(fail, line++);
     }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
 
 void prog_read() {
     char* path = get_args();
-    user_clear_terminal();
-    int line = 0;
+    int line = shell_start_line;
 
     if (!path || !path[0]) {
         char err[] = "Usage: read <path>";
@@ -428,7 +422,7 @@ void prog_read() {
         }
     }
 
-    shell_resume_line = line + 1;
+    shell_resume_line = line;
     kill_process(get_pid());
     while (1);
 }
