@@ -21,9 +21,6 @@ void blinky3();
 // Computes Fibonacci numbers.
 void fibonacci();
 
-// Userland filesystem unit tests, results go to serial.
-void fs_tests();
-
 // List directory contents one per line.
 void prog_ls();
 

@@ -1,6 +1,7 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#include "fs_tests.h"
 #include "user_lib.h"
 #include "user_progs.h"
 
