@@ -172,7 +172,22 @@ void prog_read() {
             char fail[] = "Error: file not found.";
             user_print_line(fail, line++);
         } else {
-            user_print_line(buf, line++);
+            char segment[81];
+            int i = 0, j = 0;
+            while (buf[i]) {
+                if (buf[i] == '\n') {
+                    segment[j] = '\0';
+                    user_print_line(segment, line++);
+                    j = 0;
+                } else if (j < 80) {
+                    segment[j++] = buf[i];
+                }
+                i++;
+            }
+            if (j > 0) {
+                segment[j] = '\0';
+                user_print_line(segment, line++);
+            }
         }
     }
 
