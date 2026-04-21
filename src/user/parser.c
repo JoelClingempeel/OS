@@ -39,7 +39,9 @@ static void parser_consume(Parser* p, TokenType type) {
     if (p->error) return;
     Token token = parser_advance(p);
     if (token.type != type) {
-        const char* prefix   = "Missing ";
+        // Use individual char literals — string literals land in .rodata which
+        // reads as zero due to linker layout, so we build the prefix on the stack.
+        char prefix[] = {'M','i','s','s','i','n','g',' ',0};
         const char* type_str = token_type_to_string(type);
         char msg[64];
         int i = 0;
@@ -231,10 +233,10 @@ Node* parse_braces(Parser* p) {
     if (p->error) return 0;
     parser_consume(p, TOKEN_LEFT_BRACE);
     if (p->error) return 0;
+    Token brace_tok = parser_previous(p);
     Node* n = node_alloc(p);
     if (!n) return 0;
-    StringView sv = {"{", 1};
-    n->token = (Token){sv, TOKEN_LEFT_BRACE};
+    n->token = brace_tok;
     while (!p->error && !parser_end_reached(p) &&
            parser_peek(p).type != TOKEN_RIGHT_BRACE) {
         Node* stmt = parse_statement(p);

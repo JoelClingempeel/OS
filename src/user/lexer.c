@@ -1,49 +1,62 @@
 #include "lexer.h"
 
+static char tts_buf[20];
 
 const char* token_type_to_string(TokenType type) {
     switch (type) {
-        case TOKEN_IF:             return "IF";
-        case TOKEN_ELSE:           return "ELSE";
-        case TOKEN_WHILE:          return "WHILE";
-        case TOKEN_IDENTIFIER:     return "IDENTIFIER";
-        case TOKEN_NUMBER:         return "NUMBER";
-        case TOKEN_ADD:            return "ADD";
-        case TOKEN_SUBTRACT:       return "SUBTRACT";
-        case TOKEN_MULTIPLY:       return "MULTIPLY";
-        case TOKEN_DIVIDE:         return "DIVIDE";
-        case TOKEN_SEMICOLON:      return "SEMICOLON";
-        case TOKEN_LEFT_PAREN:     return "LEFT_PAREN";
-        case TOKEN_RIGHT_PAREN:    return "RIGHT_PAREN";
-        case TOKEN_LEFT_BRACE:     return "LEFT_BRACE";
-        case TOKEN_RIGHT_BRACE:    return "RIGHT_BRACE";
-        case TOKEN_EQUALS:         return "EQUALS";
-        case TOKEN_LESS:           return "LESS";
-        case TOKEN_LESS_EQUALS:    return "LESS_EQUALS";
-        case TOKEN_GREATER:        return "GREATER";
-        case TOKEN_GREATER_EQUALS: return "GREATER_EQUALS";
-        case TOKEN_DOUBLE_EQUALS:  return "DOUBLE_EQUALS";
-        case TOKEN_NOT_EQUALS:     return "NOT_EQUALS";
-        case TOKEN_FUN:            return "FUN";
-        case TOKEN_COMMA:          return "COMMA";
-        case TOKEN_RETURN:         return "RETURN";
-        default:                   return "UNKNOWN";
+        case TOKEN_IF:
+            tts_buf[0]='I';tts_buf[1]='F';tts_buf[2]=0; break;
+        case TOKEN_ELSE:
+            tts_buf[0]='E';tts_buf[1]='L';tts_buf[2]='S';tts_buf[3]='E';tts_buf[4]=0; break;
+        case TOKEN_WHILE:
+            tts_buf[0]='W';tts_buf[1]='H';tts_buf[2]='I';tts_buf[3]='L';tts_buf[4]='E';tts_buf[5]=0; break;
+        case TOKEN_IDENTIFIER:
+            tts_buf[0]='I';tts_buf[1]='D';tts_buf[2]='E';tts_buf[3]='N';tts_buf[4]='T';tts_buf[5]=0; break;
+        case TOKEN_NUMBER:
+            tts_buf[0]='N';tts_buf[1]='U';tts_buf[2]='M';tts_buf[3]=0; break;
+        case TOKEN_ADD:
+            tts_buf[0]='A';tts_buf[1]='D';tts_buf[2]='D';tts_buf[3]=0; break;
+        case TOKEN_SUBTRACT:
+            tts_buf[0]='S';tts_buf[1]='U';tts_buf[2]='B';tts_buf[3]=0; break;
+        case TOKEN_MULTIPLY:
+            tts_buf[0]='M';tts_buf[1]='U';tts_buf[2]='L';tts_buf[3]=0; break;
+        case TOKEN_DIVIDE:
+            tts_buf[0]='D';tts_buf[1]='I';tts_buf[2]='V';tts_buf[3]=0; break;
+        case TOKEN_SEMICOLON:
+            tts_buf[0]='S';tts_buf[1]='E';tts_buf[2]='M';tts_buf[3]='I';tts_buf[4]=0; break;
+        case TOKEN_LEFT_PAREN:
+            tts_buf[0]='L';tts_buf[1]='P';tts_buf[2]='A';tts_buf[3]='R';tts_buf[4]='N';tts_buf[5]=0; break;
+        case TOKEN_RIGHT_PAREN:
+            tts_buf[0]='R';tts_buf[1]='P';tts_buf[2]='A';tts_buf[3]='R';tts_buf[4]='N';tts_buf[5]=0; break;
+        case TOKEN_LEFT_BRACE:
+            tts_buf[0]='L';tts_buf[1]='B';tts_buf[2]='R';tts_buf[3]='C';tts_buf[4]='E';tts_buf[5]=0; break;
+        case TOKEN_RIGHT_BRACE:
+            tts_buf[0]='R';tts_buf[1]='B';tts_buf[2]='R';tts_buf[3]='C';tts_buf[4]='E';tts_buf[5]=0; break;
+        case TOKEN_EQUALS:
+            tts_buf[0]='E';tts_buf[1]='Q';tts_buf[2]=0; break;
+        case TOKEN_LESS:
+            tts_buf[0]='L';tts_buf[1]='T';tts_buf[2]=0; break;
+        case TOKEN_LESS_EQUALS:
+            tts_buf[0]='L';tts_buf[1]='E';tts_buf[2]=0; break;
+        case TOKEN_GREATER:
+            tts_buf[0]='G';tts_buf[1]='T';tts_buf[2]=0; break;
+        case TOKEN_GREATER_EQUALS:
+            tts_buf[0]='G';tts_buf[1]='E';tts_buf[2]=0; break;
+        case TOKEN_DOUBLE_EQUALS:
+            tts_buf[0]='E';tts_buf[1]='Q';tts_buf[2]='Q';tts_buf[3]=0; break;
+        case TOKEN_NOT_EQUALS:
+            tts_buf[0]='N';tts_buf[1]='E';tts_buf[2]=0; break;
+        case TOKEN_FUN:
+            tts_buf[0]='F';tts_buf[1]='U';tts_buf[2]='N';tts_buf[3]=0; break;
+        case TOKEN_COMMA:
+            tts_buf[0]='C';tts_buf[1]='M';tts_buf[2]='A';tts_buf[3]=0; break;
+        case TOKEN_RETURN:
+            tts_buf[0]='R';tts_buf[1]='E';tts_buf[2]='T';tts_buf[3]=0; break;
+        default:
+            tts_buf[0]='?';tts_buf[1]=0; break;
     }
+    return tts_buf;
 }
-
-typedef struct {
-    const char* word;
-    TokenType   type;
-} Keyword;
-
-static Keyword keywords[] = {
-    {"if",     TOKEN_IF},
-    {"else",   TOKEN_ELSE},
-    {"while",  TOKEN_WHILE},
-    {"fun",    TOKEN_FUN},
-    {"return", TOKEN_RETURN},
-};
-#define NUM_KEYWORDS ((int)(sizeof(keywords) / sizeof(keywords[0])))
 
 static int is_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
@@ -53,10 +66,23 @@ static int is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
-static int sv_equals(StringView sv, const char* str) {
-    int i = 0;
-    while (i < sv.len && str[i] && sv.ptr[i] == str[i]) i++;
-    return i == sv.len && str[i] == '\0';
+// All comparisons use character literals (embedded in .text), not string
+// literals (which would land in .rodata and read as zero due to linker layout).
+static TokenType check_keyword(StringView sv) {
+    if (sv.len == 2 && sv.ptr[0] == 'i' && sv.ptr[1] == 'f')
+        return TOKEN_IF;
+    if (sv.len == 4 && sv.ptr[0] == 'e' && sv.ptr[1] == 'l' &&
+        sv.ptr[2] == 's' && sv.ptr[3] == 'e')
+        return TOKEN_ELSE;
+    if (sv.len == 5 && sv.ptr[0] == 'w' && sv.ptr[1] == 'h' &&
+        sv.ptr[2] == 'i' && sv.ptr[3] == 'l' && sv.ptr[4] == 'e')
+        return TOKEN_WHILE;
+    if (sv.len == 3 && sv.ptr[0] == 'f' && sv.ptr[1] == 'u' && sv.ptr[2] == 'n')
+        return TOKEN_FUN;
+    if (sv.len == 6 && sv.ptr[0] == 'r' && sv.ptr[1] == 'e' &&
+        sv.ptr[2] == 't' && sv.ptr[3] == 'u' && sv.ptr[4] == 'r' && sv.ptr[5] == 'n')
+        return TOKEN_RETURN;
+    return TOKEN_IDENTIFIER;
 }
 
 void lexer_init(Lexer* l, const char* source, int source_len) {
@@ -81,13 +107,7 @@ void lexer_get_token(Lexer* l) {
         while (!lexer_end_reached(l) && is_alpha(l->source[l->cur]))
             l->cur++;
         StringView lexeme = {l->source + l->start, l->cur - l->start};
-        TokenType type = TOKEN_IDENTIFIER;
-        for (int i = 0; i < NUM_KEYWORDS; i++) {
-            if (sv_equals(lexeme, keywords[i].word)) {
-                type = keywords[i].type;
-                break;
-            }
-        }
+        TokenType type = check_keyword(lexeme);
         if (l->token_count < MAX_TOKENS)
             l->tokens[l->token_count++] = (Token){lexeme, type};
 
@@ -107,16 +127,16 @@ void lexer_get_token(Lexer* l) {
         int push = 1;
 
         switch (c) {
-            case '+': type = TOKEN_ADD;       break;
-            case '-': type = TOKEN_SUBTRACT;  break;
-            case '*': type = TOKEN_MULTIPLY;  break;
-            case '/': type = TOKEN_DIVIDE;    break;
-            case ';': type = TOKEN_SEMICOLON; break;
+            case '+': type = TOKEN_ADD;         break;
+            case '-': type = TOKEN_SUBTRACT;    break;
+            case '*': type = TOKEN_MULTIPLY;    break;
+            case '/': type = TOKEN_DIVIDE;      break;
+            case ';': type = TOKEN_SEMICOLON;   break;
             case '(': type = TOKEN_LEFT_PAREN;  break;
             case ')': type = TOKEN_RIGHT_PAREN; break;
             case '{': type = TOKEN_LEFT_BRACE;  break;
             case '}': type = TOKEN_RIGHT_BRACE; break;
-            case ',': type = TOKEN_COMMA;     break;
+            case ',': type = TOKEN_COMMA;       break;
             case '=':
                 if (l->cur + 1 < l->source_len && l->source[l->cur + 1] == '=') {
                     lexeme = (StringView){l->source + l->start, 2};
