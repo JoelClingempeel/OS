@@ -68,7 +68,8 @@ void clear_terminal() {
 void clear_line(int line) {
     char *video_memory = (char *)(0xb8000 + 160 * line);
     for (int i = 0; i < 80; i++) {
-        video_memory[2 * i] = 0;
+        video_memory[2 * i]     = 0;
+        video_memory[2 * i + 1] = TEXT_FORMAT_BYTE;
     }
 }
 
