@@ -42,4 +42,7 @@ void prog_read();
 // Text editor.
 void editor();
 
+// Interpreter.
+void interp();
+
 #endif  // USER_PROGS_H
