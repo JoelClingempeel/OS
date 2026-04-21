@@ -30,12 +30,25 @@ void tty_handle_keyboard(uint8_t scancode){
         '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n',
         'm', ',', '.', '/', 0, '*', 0, ' '
     };
+    unsigned char shift_kbd[128] = {
+        0,  27, '!', '@', '#', '$', '%', '^', '&', '*',
+        '(', ')', '_', '+', '\b', '\t', 'Q', 'W', 'E', 'R',
+        'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,
+        'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
+        '"', '~', 0, '|', 'Z', 'X', 'C', 'V', 'B', 'N',
+        'M', '<', '>', '?', 0, '*', 0, ' '
+    };
+
+    // Left shift: 0x2A press / 0xAA release
+    // Right shift: 0x36 press / 0xB6 release
+    if (scancode == 0x2A || scancode == 0x36) { tty.shift = 1; return; }
+    if (scancode == 0xAA || scancode == 0xB6) { tty.shift = 0; return; }
+
     const int offset = TTY_GREET_LEN;
     if (tty.active) {
         if (scancode == 0x1c) {
             tty.active = 0;
         } else if (scancode == 0x0E) {
-            // Backspace pressed
             if (tty.index > 0) {
                 tty.input_buffer[tty.index - 1] = 0;
                 tty.index -= 1;
@@ -44,7 +57,7 @@ void tty_handle_keyboard(uint8_t scancode){
                 update_cursor(TTY_GREET_LEN + tty.index, tty.row);
             }
         } else {
-            char c = local_kbd[scancode];
+            char c = tty.shift ? shift_kbd[scancode] : local_kbd[scancode];
             tty.input_buffer[tty.index] = c;
             char *video_memory = (char *)0xb8000;
             video_memory[2*tty.index + 160*tty.row + 2*offset] = c;

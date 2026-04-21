@@ -13,6 +13,7 @@ struct tty_struct {
     uint8_t row;
     uint8_t active;
     uint8_t task_index;
+    uint8_t shift;
 };
 
 extern struct tty_struct tty;

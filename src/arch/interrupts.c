@@ -123,10 +123,10 @@ void _idt_page_fault(uint32_t error_code, uint32_t eip, uint32_t user_esp) {
 
 void _keyboard_int(){
     uint8_t scancode = inb(0x60);
-    if (!(scancode & 0x80)) {
-        if (scancode < 128) {
-            tty_handle_keyboard(scancode);
-        }
+    if (scancode == 0xAA || scancode == 0xB6) {
+        tty_handle_keyboard(scancode);
+    } else if (!(scancode & 0x80) && scancode < 128) {
+        tty_handle_keyboard(scancode);
     }
     outb(0x20, 0x20);
 }
