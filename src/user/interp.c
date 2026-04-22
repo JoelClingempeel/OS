@@ -19,6 +19,8 @@ typedef struct {
 
 static Var env[MAX_VARS];
 static int env_count;
+static int returning;
+static int return_value;
 
 static int sv_eq(StringView sv, const char* s) {
     int i = 0;
@@ -64,8 +66,10 @@ static int eval_node(Node* n);
 
 static int eval_braces(Node* n) {
     int result = 0;
-    for (int i = 0; i < n->child_count; i++)
+    for (int i = 0; i < n->child_count; i++) {
         result = eval_node(n->children[i]);
+        if (returning) return result;
+    }
     return result;
 }
 
@@ -104,6 +108,37 @@ static int eval_node(Node* n) {
 
         case TOKEN_DIVIDE:
             return eval_node(n->children[0]) / eval_node(n->children[1]);
+
+        case TOKEN_LESS:
+            return eval_node(n->children[0]) < eval_node(n->children[1]);
+        case TOKEN_LESS_EQUALS:
+            return eval_node(n->children[0]) <= eval_node(n->children[1]);
+        case TOKEN_GREATER:
+            return eval_node(n->children[0]) > eval_node(n->children[1]);
+        case TOKEN_GREATER_EQUALS:
+            return eval_node(n->children[0]) >= eval_node(n->children[1]);
+        case TOKEN_DOUBLE_EQUALS:
+            return eval_node(n->children[0]) == eval_node(n->children[1]);
+        case TOKEN_NOT_EQUALS:
+            return eval_node(n->children[0]) != eval_node(n->children[1]);
+
+        case TOKEN_IF: {
+            if (eval_node(n->children[0]))
+                eval_node(n->children[1]);
+            return 0;
+        }
+
+        case TOKEN_WHILE: {
+            while (!returning && eval_node(n->children[0]))
+                eval_node(n->children[1]);
+            return 0;
+        }
+
+        case TOKEN_RETURN: {
+            return_value = eval_node(n->children[0]);
+            returning = 1;
+            return return_value;
+        }
 
         default:
             return 0;
@@ -172,9 +207,11 @@ void interp() {
     }
 
     env_count = 0;
-    int result = eval_node(main_fn->body);
+    returning = 0;
+    return_value = 0;
+    eval_node(main_fn->body);
+    int result = return_value;
 
-    // Print result as "result: <n>" for testing.
     char buf[32];
     char prefix[] = {'r','e','s','u','l','t',':',' ',0};
     int pos = 0;
