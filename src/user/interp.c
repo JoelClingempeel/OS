@@ -9,39 +9,105 @@
 // FuncPool:  1 page  (1856 bytes)
 // Source  :  1 page  (4096 bytes)
 
-static int print_node(Node* n, int depth, int line) {
-    if (!n) return line;
-    char buf[80];
-    int pos = 0;
-    for (int i = 0; i < depth * 2 && pos < 60; i++) buf[pos++] = ' ';
-    for (int i = 0; i < n->token.lexeme.len && pos < 70; i++)
-        buf[pos++] = n->token.lexeme.ptr[i];
-    buf[pos++] = ' ';
-    const char* ts = token_type_to_string(n->token.type);
-    for (int i = 0; ts[i] && pos < 79; i++) buf[pos++] = ts[i];
-    buf[pos] = '\0';
-    user_print_line(buf, line++);
-    for (int i = 0; i < n->child_count; i++)
-        line = print_node(n->children[i], depth + 1, line);
-    return line;
+#define MAX_VAR_NAME 32
+#define MAX_VARS     30
+
+typedef struct {
+    char name[MAX_VAR_NAME];
+    int  value;
+} Var;
+
+static Var env[MAX_VARS];
+static int env_count;
+
+static int sv_eq(StringView sv, const char* s) {
+    int i = 0;
+    while (i < sv.len && s[i]) {
+        if (sv.ptr[i] != s[i]) return 0;
+        i++;
+    }
+    return i == sv.len && !s[i];
 }
 
-static int print_function_header(FunctionNode* fn, int line) {
-    char buf[80];
-    int pos = 0;
-    buf[pos++] = 'f'; buf[pos++] = 'u'; buf[pos++] = 'n'; buf[pos++] = ' ';
-    for (int i = 0; i < fn->name.lexeme.len && pos < 40; i++)
-        buf[pos++] = fn->name.lexeme.ptr[i];
-    buf[pos++] = '(';
-    for (int i = 0; i < fn->param_count; i++) {
-        for (int j = 0; j < fn->parameters[i].lexeme.len && pos < 75; j++)
-            buf[pos++] = fn->parameters[i].lexeme.ptr[j];
-        if (i + 1 < fn->param_count) buf[pos++] = ',';
+static void sv_copy(char* dst, StringView sv) {
+    int n = sv.len < MAX_VAR_NAME - 1 ? sv.len : MAX_VAR_NAME - 1;
+    for (int i = 0; i < n; i++) dst[i] = sv.ptr[i];
+    dst[n] = '\0';
+}
+
+static int parse_int(StringView sv) {
+    int result = 0;
+    for (int i = 0; i < sv.len; i++)
+        result = result * 10 + (sv.ptr[i] - '0');
+    return result;
+}
+
+static int env_get(StringView name) {
+    for (int i = 0; i < env_count; i++)
+        if (sv_eq(name, env[i].name)) return env[i].value;
+    // TODO: error on undefined variable
+    return 0;
+}
+
+static void env_set(StringView name, int value) {
+    for (int i = 0; i < env_count; i++) {
+        if (sv_eq(name, env[i].name)) { env[i].value = value; return; }
     }
-    buf[pos++] = ')';
-    buf[pos] = '\0';
-    user_print_line(buf, line++);
-    return line;
+    if (env_count < MAX_VARS) {
+        sv_copy(env[env_count].name, name);
+        env[env_count].value = value;
+        env_count++;
+    }
+}
+
+static int eval_node(Node* n);
+
+static int eval_braces(Node* n) {
+    int result = 0;
+    for (int i = 0; i < n->child_count; i++)
+        result = eval_node(n->children[i]);
+    return result;
+}
+
+static int eval_node(Node* n) {
+    if (!n) return 0;
+    switch (n->token.type) {
+        case TOKEN_NUMBER:
+            return parse_int(n->token.lexeme);
+
+        case TOKEN_IDENTIFIER:
+            if (n->child_count > 0) {
+                // TODO: evaluate function calls once functions are supported
+                return 1;
+            }
+            return env_get(n->token.lexeme);
+
+        case TOKEN_LEFT_BRACE:
+            return eval_braces(n);
+
+        case TOKEN_EQUALS: {
+            int val = eval_node(n->children[1]);
+            env_set(n->children[0]->token.lexeme, val);
+            return val;
+        }
+
+        case TOKEN_ADD:
+            return eval_node(n->children[0]) + eval_node(n->children[1]);
+
+        case TOKEN_SUBTRACT:
+            // child_count == 1: unary negation; child_count == 2: binary subtraction
+            if (n->child_count == 1) return -eval_node(n->children[0]);
+            return eval_node(n->children[0]) - eval_node(n->children[1]);
+
+        case TOKEN_MULTIPLY:
+            return eval_node(n->children[0]) * eval_node(n->children[1]);
+
+        case TOKEN_DIVIDE:
+            return eval_node(n->children[0]) / eval_node(n->children[1]);
+
+        default:
+            return 0;
+    }
 }
 
 void interp() {
@@ -49,7 +115,7 @@ void interp() {
     char* path = get_args();
 
     if (!path || !path[0]) {
-        char err[] = "Usage: interp <file>";
+        char err[] = {'U','s','a','g','e',':',' ','i','n','t','e','r','p',' ','<','f','i','l','e','>',0};
         user_print_line(err, line++);
         shell_resume_line = line;
         kill_process(get_pid());
@@ -59,7 +125,7 @@ void interp() {
     char* source = (char*)alloc_page();
 
     if (fs_read(path, source) != 0) {
-        char err[] = "Error: file not found.";
+        char err[] = {'E','r','r','o','r',':',' ','f','i','l','e',' ','n','o','t',' ','f','o','u','n','d','.',0};
         user_print_line(err, line++);
         shell_resume_line = line;
         kill_process(get_pid());
@@ -72,19 +138,6 @@ void interp() {
     alloc_page();
     lexer_init(lexer, source, source_len);
     lexer_tokenize(lexer);
-
-    // Uncomment to debug tokens:
-    // for (int i = 0; i < lexer->token_count; i++) {
-    //     char buf[80];
-    //     int pos = 0;
-    //     const char* ts = token_type_to_string(lexer->tokens[i].type);
-    //     for (int j = 0; ts[j] && pos < 40; j++) buf[pos++] = ts[j];
-    //     buf[pos++] = ' ';
-    //     for (int j = 0; j < lexer->tokens[i].lexeme.len && pos < 79; j++)
-    //         buf[pos++] = lexer->tokens[i].lexeme.ptr[j];
-    //     buf[pos] = '\0';
-    //     user_print_line(buf, line++);
-    // }
 
     NodePool* node_pool = (NodePool*)alloc_page();
     alloc_page(); alloc_page(); alloc_page(); alloc_page();
@@ -101,11 +154,38 @@ void interp() {
         while (1) {}
     }
 
+    char main_name[] = {'m','a','i','n',0};
+    FunctionNode* main_fn = 0;
     for (int i = 0; i < num_functions; i++) {
-        FunctionNode* fn = &func_pool->functions[i];
-        line = print_function_header(fn, line);
-        line = print_node(fn->body, 1, line);
+        if (sv_eq(func_pool->functions[i].name.lexeme, main_name)) {
+            main_fn = &func_pool->functions[i];
+            break;
+        }
     }
+
+    if (!main_fn) {
+        char err[] = {'E','r','r','o','r',':',' ','n','o',' ','m','a','i','n',0};
+        user_print_line(err, line++);
+        shell_resume_line = line;
+        kill_process(get_pid());
+        while (1) {}
+    }
+
+    env_count = 0;
+    int result = eval_node(main_fn->body);
+
+    // Print result as "result: <n>" for testing.
+    char buf[32];
+    char prefix[] = {'r','e','s','u','l','t',':',' ',0};
+    int pos = 0;
+    for (int i = 0; prefix[i]; i++) buf[pos++] = prefix[i];
+    if (result < 0) {
+        buf[pos++] = '-';
+        uint_to_ascii((uint32_t)(-result), buf + pos);
+    } else {
+        uint_to_ascii((uint32_t)result, buf + pos);
+    }
+    user_print_line(buf, line++);
 
     shell_resume_line = line;
     kill_process(get_pid());
