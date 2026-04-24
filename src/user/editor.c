@@ -22,6 +22,22 @@ static void display_line(int screen_row, int actual_idx, char lines[][80]) {
     user_print_line(display, screen_row);
 }
 
+static void remove_line(int actual_idx, char lines[][80]) {
+    for (int i = actual_idx; i < EDITOR_LINES - 1; i++) {
+        int j = 0;
+        while ((lines[i][j] = lines[i + 1][j])) j++;
+    }
+    lines[EDITOR_LINES - 1][0] = '\0';
+}
+
+static void insert_line_after(int actual_idx, char lines[][80]) {
+    for (int i = EDITOR_LINES - 1; i > actual_idx + 1; i--) {
+        int j = 0;
+        while ((lines[i][j] = lines[i - 1][j])) j++;
+    }
+    lines[actual_idx + 1][0] = '\0';
+}
+
 static void redisplay(int scroll_offset, char lines[][80]) {
     for (int i = 0; i < VIEW_LINES; i++) {
         user_clear_line(i);
@@ -106,6 +122,24 @@ void editor() {
                 scroll_offset += SCROLL_STEP;
                 if (scroll_offset > EDITOR_LINES - VIEW_LINES)
                     scroll_offset = EDITOR_LINES - VIEW_LINES;
+                redisplay(scroll_offset, lines);
+            }
+            continue;
+        }
+
+        if (input[0] == 'r' && input[1] == ' ') {
+            uint32_t n = str_to_uint(input + 2);
+            if (n >= 1 && n <= EDITOR_LINES) {
+                remove_line((int)(n - 1), lines);
+                redisplay(scroll_offset, lines);
+            }
+            continue;
+        }
+
+        if (input[0] == 'i' && input[1] == ' ') {
+            uint32_t n = str_to_uint(input + 2);
+            if (n >= 1 && n <= (uint32_t)(EDITOR_LINES - 1)) {
+                insert_line_after((int)(n - 1), lines);
                 redisplay(scroll_offset, lines);
             }
             continue;
