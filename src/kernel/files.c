@@ -279,13 +279,24 @@ void make_file(char* path, int is_dir) {
         write_file(new_sector, marker);
     }
 
-    // Read parent directory contents and append the new entry.
+    // Read parent directory contents, compact out tombstones, then append.
     char buf[DIR_BUF_SIZE];
     for (int i = 0; i < DIR_BUF_SIZE; i++) buf[i] = 0;
     read_file(parent_sector, buf);
 
+    char compacted[DIR_BUF_SIZE];
+    for (int i = 0; i < DIR_BUF_SIZE; i++) compacted[i] = 0;
+    char* src = buf;
     int end = 0;
-    while (buf[end]) end++;
+    while (*src) {
+        char* line_start = src;
+        while (*src && *src != '\n') src++;
+        if (*src == '\n') src++;
+        if (line_start[0] != '!') {
+            for (char* p = line_start; p < src; p++) compacted[end++] = *p;
+        }
+    }
+    for (int i = 0; i < DIR_BUF_SIZE; i++) buf[i] = compacted[i];
 
     for (int i = 0; dir_name[i]; i++) buf[end++] = dir_name[i];
     buf[end++] = ',';
