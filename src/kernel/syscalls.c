@@ -126,7 +126,7 @@ static uint32_t sys_get_input_prefilled(struct registers* regs) {
     printk_line(input_str, regs->ebx);
     char* video_memory = (char*)0xb8000;
     for (uint16_t i = 0; i < tty.index; i++) {
-        video_memory[2*i + 160*tty.row + 2*TTY_GREET_LEN] = content[i];
+        video_memory[2*i + 160*tty.row + 2*TTY_GREET_LEN - 1] = content[i];
     }
     update_cursor(TTY_GREET_LEN + tty.index, tty.row);
     return 0;
