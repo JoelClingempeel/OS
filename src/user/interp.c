@@ -168,6 +168,8 @@ static int eval_node(Node* n) {
         case TOKEN_IF: {
             if (eval_node(n->children[0]))
                 eval_node(n->children[1]);
+            else if (n->child_count > 2)
+                eval_node(n->children[2]);
             return 0;
         }
 

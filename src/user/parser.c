@@ -262,6 +262,15 @@ Node* parse_if_statement(Parser* p) {
     n->token = token;
     node_add_child(p, n, cond);
     node_add_child(p, n, body);
+    if (!p->error && parser_match(p, TOKEN_ELSE)) {
+        Node* else_branch;
+        if (!parser_end_reached(p) && parser_peek(p).type == TOKEN_IF)
+            else_branch = parse_if_statement(p);
+        else
+            else_branch = parse_braces(p);
+        if (!else_branch) return 0;
+        node_add_child(p, n, else_branch);
+    }
     return p->error ? 0 : n;
 }
 
