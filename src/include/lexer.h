@@ -27,7 +27,8 @@ typedef enum {
     TOKEN_NOT_EQUALS,
     TOKEN_FUN,
     TOKEN_COMMA,
-    TOKEN_RETURN
+    TOKEN_RETURN,
+    TOKEN_STRING
 } TokenType;
 
 // Non-owning view into the source buffer.

@@ -97,6 +97,13 @@ Node* parse_factor(Parser* p) {
         return n;
     }
 
+    if (parser_match(p, TOKEN_STRING)) {
+        Node* n = node_alloc(p);
+        if (!n) return 0;
+        n->token = parser_previous(p);
+        return n;
+    }
+
     if (parser_match(p, TOKEN_IDENTIFIER)) {
         Token id = parser_previous(p);
         if (parser_match(p, TOKEN_LEFT_PAREN)) {

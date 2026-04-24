@@ -33,6 +33,7 @@ const char* token_type_to_string(TokenType type) {
         case TOKEN_FUN:            { char s[] = "FUN";          buf_copy(tts_buf, s); break; }
         case TOKEN_COMMA:          { char s[] = "CMA";          buf_copy(tts_buf, s); break; }
         case TOKEN_RETURN:         { char s[] = "RET";          buf_copy(tts_buf, s); break; }
+        case TOKEN_STRING:         { char s[] = "STR";          buf_copy(tts_buf, s); break; }
         default:                   { tts_buf[0] = '?'; tts_buf[1] = 0;               break; }
     }
     return tts_buf;
@@ -101,6 +102,16 @@ void lexer_get_token(Lexer* l) {
 
     } else if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
         l->cur++;
+
+    } else if (c == '"') {
+        l->cur++;
+        while (!lexer_end_reached(l) && l->source[l->cur] != '"')
+            l->cur++;
+        if (!lexer_end_reached(l))
+            l->cur++;
+        StringView lexeme = {l->source + l->start, l->cur - l->start};
+        if (l->token_count < MAX_TOKENS)
+            l->tokens[l->token_count++] = (Token){lexeme, TOKEN_STRING};
 
     } else {
         StringView lexeme = {l->source + l->start, 1};

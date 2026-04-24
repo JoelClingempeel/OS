@@ -100,8 +100,49 @@ static int eval_node(Node* n) {
                 }
             }
 
-            if (!callee)
+            if (!callee) {
+                char s_print[] = {'p','r','i','n','t',0};
+                char s_input[] = {'i','n','p','u','t',0};
+
+                if (sv_eq(n->token.lexeme, s_print)) {
+                    if (n->child_count > 0 && n->children[0]->token.type == TOKEN_STRING) {
+                        StringView sv = n->children[0]->token.lexeme;
+                        char buf[128];
+                        int len = sv.len - 2;
+                        if (len > 127) len = 127;
+                        if (len < 0) len = 0;
+                        for (int i = 0; i < len; i++) buf[i] = sv.ptr[i + 1];
+                        buf[len] = '\0';
+                        user_print_line(buf, term_line++);
+                    }
+                    return 0;
+                }
+
+                if (sv_eq(n->token.lexeme, s_input)) {
+                    while (1) {
+                        char* raw = get(term_line++);
+                        int i = 0;
+                        if (raw[i] == '-') i++;
+                        int start = i;
+                        int valid = raw[i] != '\0';
+                        while (raw[i]) {
+                            if (raw[i] < '0' || raw[i] > '9') { valid = 0; break; }
+                            i++;
+                        }
+                        if (valid) {
+                            int neg = (raw[0] == '-');
+                            int result = 0;
+                            for (int j = start; raw[j]; j++)
+                                result = result * 10 + (raw[j] - '0');
+                            return neg ? -result : result;
+                        }
+                        char err[] = {'E','n','t','e','r',' ','a',' ','n','u','m','b','e','r',0};
+                        user_print_line(err, term_line++);
+                    }
+                }
+
                 return env_get(n->token.lexeme);
+            }
 
             // Evaluate arguments before modifying env.
             int args[MAX_PARAMS];
