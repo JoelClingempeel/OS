@@ -62,6 +62,7 @@ void clear_terminal() {
     char *video_memory = (char *)0xb8000;
     for (int i = 0; i < 2000; i++) {
         video_memory[2 * i] = 0;
+        video_memory[2 * i + 1] = TEXT_FORMAT_BYTE;
     }
 }
 
@@ -78,7 +79,6 @@ void printk(char* string) {
     int i = 0;
     while (string[i] != 0) {
         video_memory[2 * next_char] = string[i];
-        video_memory[2 * next_char + 1] = TEXT_FORMAT_BYTE;
         i++;
         next_char++;
     }
@@ -89,7 +89,6 @@ void printk_line(char* string, int line) {
     int i = 0;
     while (string[i] != 0) {
         video_memory[2 * i] = string[i];
-        video_memory[2 * i + 1] = TEXT_FORMAT_BYTE;
         i++;
     }
 }

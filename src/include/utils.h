@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define TEXT_FORMAT_BYTE 0x07 
+#define TEXT_FORMAT_BYTE 0x1F
 
 
 extern uint8_t next_char;
