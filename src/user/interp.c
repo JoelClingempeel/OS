@@ -5,7 +5,7 @@
 #include "utils.h"
 
 // Lexer  :  2 pages (6164 bytes)
-// NodePool:  5 pages (20480 bytes, MAX_CHILDREN=16, MAX_NODES=256)
+// NodePool:  6 pages (24576 bytes, MAX_CHILDREN=16, MAX_NODES=256) -- 5 pages is exactly 20480 bytes which leaves count field off the end
 // FuncPool:  1 page  (1856 bytes)
 // Source  :  1 page  (4096 bytes)
 
@@ -21,6 +21,8 @@ static Var env[MAX_VARS];
 static int env_count;
 static int returning;
 static int return_value;
+static FunctionPool* func_pool;
+static int term_line;
 
 static int sv_eq(StringView sv, const char* s) {
     int i = 0;
@@ -29,6 +31,13 @@ static int sv_eq(StringView sv, const char* s) {
         i++;
     }
     return i == sv.len && !s[i];
+}
+
+static int sv_sv_eq(StringView a, StringView b) {
+    if (a.len != b.len) return 0;
+    for (int i = 0; i < a.len; i++)
+        if (a.ptr[i] != b.ptr[i]) return 0;
+    return 1;
 }
 
 static void sv_copy(char* dst, StringView sv) {
@@ -79,12 +88,46 @@ static int eval_node(Node* n) {
         case TOKEN_NUMBER:
             return parse_int(n->token.lexeme);
 
-        case TOKEN_IDENTIFIER:
-            if (n->child_count > 0) {
-                // TODO: evaluate function calls once functions are supported
-                return 1;
+        case TOKEN_IDENTIFIER: {
+            // Function call: find callee in func_pool.
+            // Must check before env_get: a zero-arg call has child_count==0,
+            // identical to a variable reference, so we use func_pool as the discriminator.
+            FunctionNode* callee = 0;
+            for (int i = 0; i < func_pool->count; i++) {
+                if (sv_sv_eq(func_pool->functions[i].name.lexeme, n->token.lexeme)) {
+                    callee = &func_pool->functions[i];
+                    break;
+                }
             }
-            return env_get(n->token.lexeme);
+
+            if (!callee)
+                return env_get(n->token.lexeme);
+
+            // Evaluate arguments before modifying env.
+            int args[MAX_PARAMS];
+            for (int i = 0; i < n->child_count && i < MAX_PARAMS; i++)
+                args[i] = eval_node(n->children[i]);
+
+            // Save caller scope, push parameters as new variables.
+            int saved_count = env_count;
+            for (int i = 0; i < callee->param_count; i++) {
+                // TODO: error on argument count mismatch
+                int val = i < n->child_count ? args[i] : 0;
+                env_set(callee->parameters[i].lexeme, val);
+            }
+
+            int saved_return = return_value;
+            returning = 0;
+            eval_node(callee->body);
+            int result = return_value;
+
+            // Restore caller scope and return state.
+            env_count = saved_count;
+            return_value = saved_return;
+            returning = 0;
+
+            return result;
+        }
 
         case TOKEN_LEFT_BRACE:
             return eval_braces(n);
@@ -158,6 +201,7 @@ void interp() {
     }
 
     char* source = (char*)alloc_page();
+    memset(source, 0, 4096);
 
     if (fs_read(path, source) != 0) {
         char err[] = {'E','r','r','o','r',':',' ','f','i','l','e',' ','n','o','t',' ','f','o','u','n','d','.',0};
@@ -175,8 +219,8 @@ void interp() {
     lexer_tokenize(lexer);
 
     NodePool* node_pool = (NodePool*)alloc_page();
-    alloc_page(); alloc_page(); alloc_page(); alloc_page();
-    FunctionPool* func_pool = (FunctionPool*)alloc_page();
+    alloc_page(); alloc_page(); alloc_page(); alloc_page(); alloc_page();
+    func_pool = (FunctionPool*)alloc_page();
 
     Parser parser;
     parser_init(&parser, lexer->tokens, lexer->token_count, node_pool, func_pool);
@@ -209,7 +253,9 @@ void interp() {
     env_count = 0;
     returning = 0;
     return_value = 0;
+    term_line = line;
     eval_node(main_fn->body);
+    line = term_line;
     int result = return_value;
 
     char buf[32];

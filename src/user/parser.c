@@ -55,7 +55,7 @@ static void parser_consume(Parser* p, TokenType type) {
 
 static Node* node_alloc(Parser* p) {
     if (p->node_pool->count >= MAX_NODES) {
-        parser_set_error(p, "Node pool exhausted");
+        { char m[] = {'N','o','d','e',' ','p','o','o','l',' ','e','x','h','a','u','s','t','e','d',0}; parser_set_error(p, m); }
         return 0;
     }
     Node* n = &p->node_pool->nodes[p->node_pool->count++];
@@ -65,7 +65,7 @@ static Node* node_alloc(Parser* p) {
 
 static void node_add_child(Parser* p, Node* parent, Node* child) {
     if (parent->child_count >= MAX_CHILDREN) {
-        parser_set_error(p, "Too many children");
+        { char m[] = {'T','o','o',' ','m','a','n','y',' ','c','h','i','l','d','r','e','n',0}; parser_set_error(p, m); }
         return;
     }
     parent->children[parent->child_count++] = child;
@@ -126,7 +126,7 @@ Node* parse_factor(Parser* p) {
         return p->error ? 0 : n;
     }
 
-    parser_set_error(p, "Missing number or identifier");
+    { char m[] = {'M','i','s','s','i','n','g',' ','n','u','m',' ','o','r',' ','i','d','e','n','t',0}; parser_set_error(p, m); }
     return 0;
 }
 
@@ -213,7 +213,7 @@ Node* parse_assignment(Parser* p) {
     if (!left) return 0;
     if (!p->error && parser_match(p, TOKEN_EQUALS)) {
         if (left->token.type != TOKEN_IDENTIFIER) {
-            parser_set_error(p, "Invalid assignment");
+            { char m[] = {'I','n','v','a','l','i','d',' ','a','s','s','i','g','n','m','e','n','t',0}; parser_set_error(p, m); }
             return 0;
         }
         Token op    = parser_previous(p);
@@ -313,7 +313,7 @@ Node* parse_statement(Parser* p) {
 int parse_function(Parser* p) {
     if (p->error) return 0;
     if (p->func_pool->count >= MAX_FUNCTIONS) {
-        parser_set_error(p, "Too many functions");
+        { char m[] = {'T','o','o',' ','m','a','n','y',' ','f','u','n','c','t','i','o','n','s',0}; parser_set_error(p, m); }
         return 0;
     }
     parser_consume(p, TOKEN_FUN);
