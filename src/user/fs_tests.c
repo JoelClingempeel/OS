@@ -202,6 +202,47 @@ void fs_tests() {
           char m[] = "FAIL: multisector write/read"; user_print_line(m, line++);
       } }
 
+    // Test 13: rename within same directory.
+    { char p[] = "/mvtest"; fs_mkdir(p); }
+    { char p[] = "/mvtest/original"; char c[] = "rename content"; fs_write(p, c); }
+    { char src[] = "/mvtest/original"; char dst[] = "/mvtest/renamed"; r = fs_rename(src, dst); }
+    ls_buf[0] = '\0';
+    { char p[] = "/mvtest"; fs_ls(p, ls_buf); }
+    memset(buf, 0, sizeof(buf));
+    { char p[] = "/mvtest/renamed"; fs_read(p, buf); }
+    { char has[]      = "renamed";
+      char gone[]     = "original";
+      char expected[] = "rename content";
+      if (r == 0 && ls_contains(ls_buf, has) && !ls_contains(ls_buf, gone) && strcmp(buf, expected) == 0) {
+          char m[] = "PASS: rename within directory"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: rename within directory"; user_print_line(m, line++);
+      } }
+    { char p[] = "/mvtest/renamed"; fs_rm(p); }
+    { char p[] = "/mvtest"; fs_rmdir(p); }
+
+    // Test 14: move between directories.
+    { char p[] = "/mvsrc"; fs_mkdir(p); }
+    { char p[] = "/mvdst"; fs_mkdir(p); }
+    { char p[] = "/mvsrc/myfile"; char c[] = "move content"; fs_write(p, c); }
+    { char src[] = "/mvsrc/myfile"; char dst[] = "/mvdst/myfile"; r = fs_rename(src, dst); }
+    ls_buf[0] = '\0';
+    { char p[] = "/mvdst"; fs_ls(p, ls_buf); }
+    { char src_ls[512]; src_ls[0] = '\0';
+      { char p[] = "/mvsrc"; fs_ls(p, src_ls); }
+      memset(buf, 0, sizeof(buf));
+      { char p[] = "/mvdst/myfile"; fs_read(p, buf); }
+      char has[]      = "myfile";
+      char expected[] = "move content";
+      if (r == 0 && ls_contains(ls_buf, has) && !ls_contains(src_ls, has) && strcmp(buf, expected) == 0) {
+          char m[] = "PASS: move between directories"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: move between directories"; user_print_line(m, line++);
+      } }
+    { char p[] = "/mvdst/myfile"; fs_rm(p); }
+    { char p[] = "/mvsrc"; fs_rmdir(p); }
+    { char p[] = "/mvdst"; fs_rmdir(p); }
+
     { char m[] = "--- DONE ---"; user_print_line(m, line++); }
 
     shell_resume_line = line;

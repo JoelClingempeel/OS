@@ -327,6 +327,19 @@ int fs_rm(char* path) {
     return (int)ret;
 }
 
+int fs_rename(char* src, char* dst) {
+    uint32_t ret;
+    asm volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(19),
+          "b"((uint32_t)src),
+          "c"((uint32_t)dst)
+        : "memory"
+    );
+    return (int)ret;
+}
+
 int fs_rmdir(char* path) {
     uint32_t ret;
     asm volatile (

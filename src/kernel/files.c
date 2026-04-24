@@ -367,6 +367,42 @@ int delete_file(char* path) {
     return 0;
 }
 
+int rename_path(char* src, char* dst) {
+    uint32_t src_parent;
+    char src_name[MAX_NAME];
+    if (split_path(src, &src_parent, src_name) < 0) return -1;
+
+    int is_dir = 0;
+    uint32_t file_sector = lookup_in_dir(src_parent, src_name, &is_dir);
+    if (file_sector == 0) return -1;
+
+    uint32_t dst_parent;
+    char dst_name[MAX_NAME];
+    if (split_path(dst, &dst_parent, dst_name) < 0) return -1;
+
+    int dst_dummy = 0;
+    if (lookup_in_dir(dst_parent, dst_name, &dst_dummy) != 0) return -1;
+
+    // Add new entry in dst directory first, then tombstone src.
+    char buf[DIR_BUF_SIZE];
+    for (int i = 0; i < DIR_BUF_SIZE; i++) buf[i] = 0;
+    read_file(dst_parent, buf);
+    int end = 0;
+    while (buf[end]) end++;
+    for (int i = 0; dst_name[i]; i++) buf[end++] = dst_name[i];
+    buf[end++] = ',';
+    if (is_dir) buf[end++] = 'd';
+    char num_str[12];
+    uint_to_str(file_sector, num_str);
+    for (int i = 0; num_str[i]; i++) buf[end++] = num_str[i];
+    buf[end++] = '\n';
+    buf[end] = '\0';
+    write_file(dst_parent, buf);
+
+    tombstone_in_parent(src_parent, src_name);
+    return 0;
+}
+
 int delete_dir(char* path) {
     uint32_t parent_sector;
     char name[MAX_NAME];

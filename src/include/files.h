@@ -23,6 +23,9 @@ void make_file(char* path, int is_dir);
 // Lists immediate children of `path`. Returns count, or -1 if path not found.
 int lsdir(char* path, char names[][MAX_NAME], int max_names);
 
+// Move/rename src to dst. Returns 0 on success, -1 on failure.
+int rename_path(char* src, char* dst);
+
 // Delete a file or an empty directory. Return 0 on success, -1 on failure.
 int delete_file(char* path);
 int delete_dir(char* path);

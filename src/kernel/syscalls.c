@@ -114,6 +114,10 @@ static uint32_t sys_fs_rmdir(struct registers* regs) {
     return (uint32_t)delete_dir((char*)regs->ebx);
 }
 
+static uint32_t sys_fs_rename(struct registers* regs) {
+    return (uint32_t)rename_path((char*)regs->ebx, (char*)regs->ecx);
+}
+
 static uint32_t sys_get_input_prefilled(struct registers* regs) {
     char* content = (char*)regs->ecx;
     memset(&tty.input_buffer, 0, 1024);
@@ -154,6 +158,7 @@ void do_syscall(struct registers* regs){
         case 16: regs->eax = sys_fs_rm(regs);          break;
         case 17: regs->eax = sys_fs_rmdir(regs);          break;
         case 18: regs->eax = sys_get_input_prefilled(regs); break;
+        case 19: regs->eax = sys_fs_rename(regs);           break;
         default:
             SERIAL_PRINT("[syscall] bad syscall number: ");
             serial_print_uint(syscall_number);

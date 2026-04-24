@@ -81,6 +81,7 @@ void shell(){
             char kill_cmd[] = "kill";
             char clear_cmd[] = "clear";
             char help_cmd[] = "help";
+            char move_cmd[] = "move";
 
             if (tokencmp(user_input, cd_cmd) == 0) {
                 char* arg = user_input + 2;
@@ -157,6 +158,7 @@ void shell(){
                 char h11[] = "rmdir <path> - remove empty directory.";
                 char h12[] = "write <path> - write input to file.";
                 char h13[] = "read <path> - print file contents.";
+                char h14[] = "move <src> <dst> - move or rename a file/directory.";
                 user_print_line(h1,  index);
                 user_print_line(h2,  index+1);
                 user_print_line(h3,  index+2);
@@ -170,7 +172,56 @@ void shell(){
                 user_print_line(h11, index+10);
                 user_print_line(h12, index+11);
                 user_print_line(h13, index+12);
-                index += 13;
+                user_print_line(h14, index+13);
+                index += 14;
+            } else if (tokencmp(user_input, move_cmd) == 0) {
+                char* arg = user_input + 4;
+                if (*arg == ' ') arg++;
+
+                char src_raw[256];
+                int i = 0;
+                while (*arg && *arg != ' ' && i < 255) src_raw[i++] = *arg++;
+                src_raw[i] = '\0';
+                if (*arg == ' ') arg++;
+
+                char dst_raw[256];
+                i = 0;
+                while (*arg && i < 255) dst_raw[i++] = *arg++;
+                dst_raw[i] = '\0';
+
+                if (!src_raw[0] || !dst_raw[0]) {
+                    char err[] = "Usage: move <src> <dst>";
+                    user_print_line(err, index++);
+                } else {
+                    char src_abs[256];
+                    if (src_raw[0] == '/') {
+                        strcpy(src_abs, src_raw);
+                    } else {
+                        strcpy(src_abs, cwd);
+                        int len = strlen(src_abs);
+                        if (src_abs[len - 1] != '/') { src_abs[len] = '/'; src_abs[len + 1] = '\0'; }
+                        strcpy(src_abs + strlen(src_abs), src_raw);
+                    }
+
+                    char dst_abs[256];
+                    if (dst_raw[0] == '/') {
+                        strcpy(dst_abs, dst_raw);
+                    } else {
+                        strcpy(dst_abs, cwd);
+                        int len = strlen(dst_abs);
+                        if (dst_abs[len - 1] != '/') { dst_abs[len] = '/'; dst_abs[len + 1] = '\0'; }
+                        strcpy(dst_abs + strlen(dst_abs), dst_raw);
+                    }
+
+                    int r = fs_rename(src_abs, dst_abs);
+                    if (r == 0) {
+                        char done[] = "Moved.";
+                        user_print_line(done, index++);
+                    } else {
+                        char fail[] = "Error: move failed.";
+                        user_print_line(fail, index++);
+                    }
+                }
             } else {
                 char invalid_str[] = "Invalid command. Type help for options.";
                 user_print_line(invalid_str, index++);

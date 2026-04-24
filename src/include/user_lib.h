@@ -85,6 +85,9 @@ int fs_write(char* path, char* buf);
 // Delete a file at path. Returns 0 on success, -1 on failure.
 int fs_rm(char* path);
 
+// Move/rename src to dst. Returns 0 on success, -1 on failure.
+int fs_rename(char* src, char* dst);
+
 // Delete an empty directory at path. Returns 0 on success, -1 on failure (including non-empty).
 int fs_rmdir(char* path);
 
