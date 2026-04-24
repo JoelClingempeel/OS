@@ -243,6 +243,22 @@ void fs_tests() {
     { char p[] = "/mvsrc"; fs_rmdir(p); }
     { char p[] = "/mvdst"; fs_rmdir(p); }
 
+    // Test 15: copy - dst has same content, src still exists.
+    { char p[] = "/cptest"; char c[] = "copy content"; fs_write(p, c); }
+    { char src[] = "/cptest"; char dst[] = "/cptest2"; r = fs_copy(src, dst); }
+    memset(buf, 0, sizeof(buf));
+    { char p[] = "/cptest2"; fs_read(p, buf); }
+    { char src_buf[512]; src_buf[0] = '\0';
+      { char p[] = "/cptest"; fs_read(p, src_buf); }
+      char expected[] = "copy content";
+      if (r == 0 && strcmp(buf, expected) == 0 && strcmp(src_buf, expected) == 0) {
+          char m[] = "PASS: copy file"; user_print_line(m, line++);
+      } else {
+          char m[] = "FAIL: copy file"; user_print_line(m, line++);
+      } }
+    { char p[] = "/cptest";  fs_rm(p); }
+    { char p[] = "/cptest2"; fs_rm(p); }
+
     { char m[] = "--- DONE ---"; user_print_line(m, line++); }
 
     shell_resume_line = line;

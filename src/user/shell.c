@@ -82,6 +82,7 @@ void shell(){
             char clear_cmd[] = "clear";
             char help_cmd[] = "help";
             char move_cmd[] = "move";
+            char copy_cmd[] = "copy";
 
             if (tokencmp(user_input, cd_cmd) == 0) {
                 char* arg = user_input + 2;
@@ -159,6 +160,7 @@ void shell(){
                 char h12[] = "write <path> - write input to file.";
                 char h13[] = "read <path> - print file contents.";
                 char h14[] = "move <src> <dst> - move or rename a file/directory.";
+                char h15[] = "copy <src> <dst> - copy a file.";
                 user_print_line(h1,  index);
                 user_print_line(h2,  index+1);
                 user_print_line(h3,  index+2);
@@ -173,7 +175,8 @@ void shell(){
                 user_print_line(h12, index+11);
                 user_print_line(h13, index+12);
                 user_print_line(h14, index+13);
-                index += 14;
+                user_print_line(h15, index+14);
+                index += 15;
             } else if (tokencmp(user_input, move_cmd) == 0) {
                 char* arg = user_input + 4;
                 if (*arg == ' ') arg++;
@@ -219,6 +222,54 @@ void shell(){
                         user_print_line(done, index++);
                     } else {
                         char fail[] = "Error: move failed.";
+                        user_print_line(fail, index++);
+                    }
+                }
+            } else if (tokencmp(user_input, copy_cmd) == 0) {
+                char* arg = user_input + 4;
+                if (*arg == ' ') arg++;
+
+                char src_raw[256];
+                int i = 0;
+                while (*arg && *arg != ' ' && i < 255) src_raw[i++] = *arg++;
+                src_raw[i] = '\0';
+                if (*arg == ' ') arg++;
+
+                char dst_raw[256];
+                i = 0;
+                while (*arg && i < 255) dst_raw[i++] = *arg++;
+                dst_raw[i] = '\0';
+
+                if (!src_raw[0] || !dst_raw[0]) {
+                    char err[] = "Usage: copy <src> <dst>";
+                    user_print_line(err, index++);
+                } else {
+                    char src_abs[256];
+                    if (src_raw[0] == '/') {
+                        strcpy(src_abs, src_raw);
+                    } else {
+                        strcpy(src_abs, cwd);
+                        int len = strlen(src_abs);
+                        if (src_abs[len - 1] != '/') { src_abs[len] = '/'; src_abs[len + 1] = '\0'; }
+                        strcpy(src_abs + strlen(src_abs), src_raw);
+                    }
+
+                    char dst_abs[256];
+                    if (dst_raw[0] == '/') {
+                        strcpy(dst_abs, dst_raw);
+                    } else {
+                        strcpy(dst_abs, cwd);
+                        int len = strlen(dst_abs);
+                        if (dst_abs[len - 1] != '/') { dst_abs[len] = '/'; dst_abs[len + 1] = '\0'; }
+                        strcpy(dst_abs + strlen(dst_abs), dst_raw);
+                    }
+
+                    int r = fs_copy(src_abs, dst_abs);
+                    if (r == 0) {
+                        char done[] = "Copied.";
+                        user_print_line(done, index++);
+                    } else {
+                        char fail[] = "Error: copy failed.";
                         user_print_line(fail, index++);
                     }
                 }

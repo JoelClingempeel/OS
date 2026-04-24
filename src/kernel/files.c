@@ -353,6 +353,54 @@ static int split_path(char* path, uint32_t* parent_sector_out, char* name_out) {
     return 0;
 }
 
+int copy_path(char* src, char* dst) {
+    uint32_t src_sector = lookup_path(src);
+    if (src_sector == 0xFFFFFFFF) return -1;
+
+    uint32_t dst_parent;
+    char dst_name[MAX_NAME];
+    if (split_path(dst, &dst_parent, dst_name) < 0) return -1;
+    int dummy = 0;
+    if (lookup_in_dir(dst_parent, dst_name, &dummy) != 0) return -1;
+
+    uint32_t dst_first = find_empty_sector(2);
+    bitmap_set_sector(dst_first);
+
+    char dir_buf[DIR_BUF_SIZE];
+    for (int i = 0; i < DIR_BUF_SIZE; i++) dir_buf[i] = 0;
+    read_file(dst_parent, dir_buf);
+    int end = 0;
+    while (dir_buf[end]) end++;
+    for (int i = 0; dst_name[i]; i++) dir_buf[end++] = dst_name[i];
+    dir_buf[end++] = ',';
+    char num_str[12];
+    uint_to_str(dst_first, num_str);
+    for (int i = 0; num_str[i]; i++) dir_buf[end++] = num_str[i];
+    dir_buf[end++] = '\n';
+    dir_buf[end] = '\0';
+    write_file(dst_parent, dir_buf);
+
+    uint32_t src_cur = src_sector;
+    uint32_t dst_cur = dst_first;
+    uint8_t sector[SECTOR_SIZE];
+    while (1) {
+        disk_read(src_cur, sector);
+        uint32_t src_next = *(uint32_t*)sector;
+        if (src_next != 0) {
+            uint32_t dst_next = find_empty_sector(dst_cur + 1);
+            bitmap_set_sector(dst_next);
+            *(uint32_t*)sector = dst_next;
+            disk_write(dst_cur, sector);
+            src_cur = src_next;
+            dst_cur = dst_next;
+        } else {
+            disk_write(dst_cur, sector);
+            break;
+        }
+    }
+    return 0;
+}
+
 int delete_file(char* path) {
     uint32_t parent_sector;
     char name[MAX_NAME];

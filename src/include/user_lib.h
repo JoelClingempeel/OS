@@ -85,6 +85,9 @@ int fs_write(char* path, char* buf);
 // Delete a file at path. Returns 0 on success, -1 on failure.
 int fs_rm(char* path);
 
+// Copy file at src to dst. Returns 0 on success, -1 on failure.
+int fs_copy(char* src, char* dst);
+
 // Move/rename src to dst. Returns 0 on success, -1 on failure.
 int fs_rename(char* src, char* dst);
 
