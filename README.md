@@ -29,6 +29,17 @@ This is a hobby text-based operating system.
 
 ![concurrency](screenshots/concurrency.png)
 
+## Structure
+
+```
+src
+├── arch     # bootloader and interrupt handling
+├── include  # header files
+├── kernel   # scheduler, memory, filesystem, syscalls
+├── user     # shell, editor, interpreter, user programs
+└── utils    # utility functions
+```
+
 ## Scripting
 
 The scripting language has a C-like syntax but no typing: all variables are integers. Run a file via `interp <file name>`.
