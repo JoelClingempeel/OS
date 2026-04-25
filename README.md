@@ -27,6 +27,8 @@ This is a hobby text-based operating system.
  * **Scripting** - interpreter for a custom language
  * **Text editor** - terminal-based text editor to create/edit files within the OS
 
+![concurrency](screenshots/concurrency.png)
+
 ## Scripting
 
 The scripting language has a C-like syntax but no typing: all variables are integers. Run a file via `interp <file name>`.
@@ -56,6 +58,8 @@ fun main() {
 }
  ```
 
+![interpreter](screenshots/interpreter.png)
+
 ## Text Editor
 
 Launch by running `editor <file name>`, and control by entering commands at the bottom.
@@ -67,3 +71,5 @@ Launch by running `editor <file name>`, and control by entering commands at the 
  * **`e`** - exits
  * **`i <line number>`** - inserts a blank line after a given line
  * **`r <line number>`** - removes a line
+
+ ![editor](screenshots/editor.png)
