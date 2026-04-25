@@ -51,6 +51,8 @@ The scripting language has a C-like syntax but no typing: all variables are inte
  * **Functions**
  * **print() and input()**
 
+
+### Example: Fibonacci Numbers
  ```c
 fun main() {
     print("Which Fibonacci number do you want?");
@@ -59,7 +61,7 @@ fun main() {
     j = 1;
     tmp = 1;
     count = 0;
-    while (count < N - 1) {
+    while (count < N - 2) {
         tmp = j;
         j = j + i;
         i = tmp;
