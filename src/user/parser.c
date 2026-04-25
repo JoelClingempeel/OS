@@ -128,7 +128,7 @@ Node* parse_factor(Parser* p) {
     }
 
     if (parser_match(p, TOKEN_LEFT_PAREN)) {
-        Node* n = parse_expression(p);
+        Node* n = parse_logical_or(p);
         parser_consume(p, TOKEN_RIGHT_PAREN);
         return p->error ? 0 : n;
     }
@@ -139,7 +139,7 @@ Node* parse_factor(Parser* p) {
 
 Node* parse_unary(Parser* p) {
     if (p->error) return 0;
-    if (parser_match(p, TOKEN_SUBTRACT)) {
+    if (parser_match(p, TOKEN_SUBTRACT) || parser_match(p, TOKEN_NOT)) {
         Token op = parser_previous(p);
         Node* n = node_alloc(p);
         if (!n) return 0;
@@ -214,9 +214,45 @@ Node* parse_comparison(Parser* p) {
     return left;
 }
 
-Node* parse_assignment(Parser* p) {
+Node* parse_logical_and(Parser* p) {
     if (p->error) return 0;
     Node* left = parse_comparison(p);
+    if (!left) return 0;
+    while (!p->error && parser_match(p, TOKEN_AND)) {
+        Token op    = parser_previous(p);
+        Node* right = parse_comparison(p);
+        if (!right) return 0;
+        Node* n = node_alloc(p);
+        if (!n) return 0;
+        n->token = op;
+        node_add_child(p, n, left);
+        node_add_child(p, n, right);
+        left = n;
+    }
+    return p->error ? 0 : left;
+}
+
+Node* parse_logical_or(Parser* p) {
+    if (p->error) return 0;
+    Node* left = parse_logical_and(p);
+    if (!left) return 0;
+    while (!p->error && parser_match(p, TOKEN_OR)) {
+        Token op    = parser_previous(p);
+        Node* right = parse_logical_and(p);
+        if (!right) return 0;
+        Node* n = node_alloc(p);
+        if (!n) return 0;
+        n->token = op;
+        node_add_child(p, n, left);
+        node_add_child(p, n, right);
+        left = n;
+    }
+    return p->error ? 0 : left;
+}
+
+Node* parse_assignment(Parser* p) {
+    if (p->error) return 0;
+    Node* left = parse_logical_or(p);
     if (!left) return 0;
     if (!p->error && parser_match(p, TOKEN_EQUALS)) {
         if (left->token.type != TOKEN_IDENTIFIER) {
@@ -224,7 +260,7 @@ Node* parse_assignment(Parser* p) {
             return 0;
         }
         Token op    = parser_previous(p);
-        Node* right = parse_comparison(p);
+        Node* right = parse_logical_or(p);
         if (!right) return 0;
         Node* n = node_alloc(p);
         if (!n) return 0;
@@ -259,7 +295,7 @@ Node* parse_if_statement(Parser* p) {
     parser_match(p, TOKEN_IF);
     Token token = parser_previous(p);
     parser_consume(p, TOKEN_LEFT_PAREN);
-    Node* cond = parse_comparison(p);
+    Node* cond = parse_logical_or(p);
     if (!cond) return 0;
     parser_consume(p, TOKEN_RIGHT_PAREN);
     Node* body = parse_braces(p);
@@ -286,7 +322,7 @@ Node* parse_while_statement(Parser* p) {
     parser_match(p, TOKEN_WHILE);
     Token token = parser_previous(p);
     parser_consume(p, TOKEN_LEFT_PAREN);
-    Node* cond = parse_comparison(p);
+    Node* cond = parse_logical_or(p);
     if (!cond) return 0;
     parser_consume(p, TOKEN_RIGHT_PAREN);
     Node* body = parse_braces(p);
@@ -303,7 +339,7 @@ Node* parse_return_statement(Parser* p) {
     if (p->error) return 0;
     parser_match(p, TOKEN_RETURN);
     Token token = parser_previous(p);
-    Node* child = parse_comparison(p);
+    Node* child = parse_logical_or(p);
     if (!child) return 0;
     parser_consume(p, TOKEN_SEMICOLON);
     Node* n = node_alloc(p);

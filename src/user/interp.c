@@ -187,6 +187,9 @@ static int eval_node(Node* n) {
             if (n->child_count == 1) return -eval_node(n->children[0]);
             return eval_node(n->children[0]) - eval_node(n->children[1]);
 
+        case TOKEN_NOT:
+            return !eval_node(n->children[0]);
+
         case TOKEN_MULTIPLY:
             return eval_node(n->children[0]) * eval_node(n->children[1]);
 
@@ -205,6 +208,15 @@ static int eval_node(Node* n) {
             return eval_node(n->children[0]) == eval_node(n->children[1]);
         case TOKEN_NOT_EQUALS:
             return eval_node(n->children[0]) != eval_node(n->children[1]);
+
+        case TOKEN_AND: {
+            int left = eval_node(n->children[0]);
+            return left ? !!eval_node(n->children[1]) : 0;
+        }
+        case TOKEN_OR: {
+            int left = eval_node(n->children[0]);
+            return left ? 1 : !!eval_node(n->children[1]);
+        }
 
         case TOKEN_IF: {
             if (eval_node(n->children[0]))

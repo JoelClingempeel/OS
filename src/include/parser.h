@@ -49,6 +49,8 @@ Node* parse_unary(Parser* p);
 Node* parse_term(Parser* p);
 Node* parse_expression(Parser* p);
 Node* parse_comparison(Parser* p);
+Node* parse_logical_and(Parser* p);
+Node* parse_logical_or(Parser* p);
 Node* parse_assignment(Parser* p);
 Node* parse_braces(Parser* p);
 Node* parse_if_statement(Parser* p);

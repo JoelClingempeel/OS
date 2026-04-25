@@ -34,6 +34,9 @@ const char* token_type_to_string(TokenType type) {
         case TOKEN_COMMA:          { char s[] = "CMA";          buf_copy(tts_buf, s); break; }
         case TOKEN_RETURN:         { char s[] = "RET";          buf_copy(tts_buf, s); break; }
         case TOKEN_STRING:         { char s[] = "STR";          buf_copy(tts_buf, s); break; }
+        case TOKEN_AND:            { char s[] = "AND";          buf_copy(tts_buf, s); break; }
+        case TOKEN_OR:             { char s[] = "OR";           buf_copy(tts_buf, s); break; }
+        case TOKEN_NOT:            { char s[] = "NOT";          buf_copy(tts_buf, s); break; }
         default:                   { tts_buf[0] = '?'; tts_buf[1] = 0;               break; }
     }
     return tts_buf;
@@ -156,13 +159,31 @@ void lexer_get_token(Lexer* l) {
                     type = TOKEN_GREATER;
                 }
                 break;
+            case '&':
+                if (l->cur + 1 < l->source_len && l->source[l->cur + 1] == '&') {
+                    lexeme = (StringView){l->source + l->start, 2};
+                    type = TOKEN_AND;
+                    l->cur++;
+                } else {
+                    push = 0;
+                }
+                break;
+            case '|':
+                if (l->cur + 1 < l->source_len && l->source[l->cur + 1] == '|') {
+                    lexeme = (StringView){l->source + l->start, 2};
+                    type = TOKEN_OR;
+                    l->cur++;
+                } else {
+                    push = 0;
+                }
+                break;
             case '!':
                 if (l->cur + 1 < l->source_len && l->source[l->cur + 1] == '=') {
                     lexeme = (StringView){l->source + l->start, 2};
                     type = TOKEN_NOT_EQUALS;
                     l->cur++;
                 } else {
-                    push = 0;
+                    type = TOKEN_NOT;
                 }
                 break;
             default:
