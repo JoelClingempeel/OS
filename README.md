@@ -44,7 +44,7 @@ src
 
 The scripting language has a C-like syntax but no typing: all variables are integers. Run a file via `interp <file name>`.
 
- * **Standard arithmetic**
+ * **Standard arithmetic and logic**
  * **Variables**
  * **if / else if / else statements**
  * **while loops**
