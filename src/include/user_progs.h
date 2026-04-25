@@ -18,9 +18,6 @@ void blinky2();
 // Make a green Y repeatedly appear and disappear.
 void blinky3();
 
-// Computes Fibonacci numbers.
-void fibonacci();
-
 // List directory contents one per line.
 void prog_ls();
 
@@ -38,6 +35,12 @@ void prog_write();
 
 // Print file contents.
 void prog_read();
+
+// Move or rename a file/directory.
+void prog_move();
+
+// Copy a file.
+void prog_copy();
 
 // Text editor.
 void editor();

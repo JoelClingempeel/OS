@@ -36,10 +36,10 @@ SECTIONS {
         _kernel_end = .;
     }
 
-    /* 
-     * This is crucial: Ensure the output binary size matches what BIOS reads (51200 bytes total)
-     * We align to a total size of 51200 bytes (50KB) as defined in your assembly RESB padding
+    /*
+     * This is crucial: Ensure the output binary size matches what BIOS reads (61440 bytes total)
+     * We align to a total size of 61440 bytes (60KB) as defined in your assembly RESB padding
      */
-    . = 0x7C00 + 51200;
+    . = 0x7C00 + 61440;
     /DISCARD/ : { *(.note.GNU-stack) } /* Optional: discard standard junk we don't need */
 }

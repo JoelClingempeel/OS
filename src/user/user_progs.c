@@ -199,21 +199,66 @@ void prog_read() {
     while (1);
 }
 
-void fibonacci() {
-    int start_line = 25 - NUM_FIB_NUMS;
-    char str_buf[10];
-    uint32_t prev = 1;
-    uint32_t cur = 1;
-    uint32_t temp;
-    char str_1[] = "1";
-    user_print_line(str_1, start_line);
-    user_print_line(str_1, start_line + 1);
-    for (int i = start_line + 2; i < 25; i++) {
-        temp = cur;
-        cur = cur + prev;
-        prev = temp;
-        uint_to_ascii(cur, str_buf);
-        user_print_line(str_buf, i);
+void prog_move() {
+    char* args = get_args();
+    int line = shell_start_line;
+
+    char src[256], dst[256];
+    int i = 0;
+    while (*args && *args != ' ' && i < 255) src[i++] = *args++;
+    src[i] = '\0';
+    if (*args == ' ') args++;
+    i = 0;
+    while (*args && i < 255) dst[i++] = *args++;
+    dst[i] = '\0';
+
+    if (!src[0] || !dst[0]) {
+        char err[] = "Usage: move <src> <dst>";
+        user_print_line(err, line++);
+    } else {
+        int r = fs_rename(src, dst);
+        if (r == 0) {
+            char done[] = "Moved.";
+            user_print_line(done, line++);
+        } else {
+            char fail[] = "Error: move failed.";
+            user_print_line(fail, line++);
+        }
     }
-    while(1); 
+
+    shell_resume_line = line;
+    kill_process(get_pid());
+    while (1);
+}
+
+void prog_copy() {
+    char* args = get_args();
+    int line = shell_start_line;
+
+    char src[256], dst[256];
+    int i = 0;
+    while (*args && *args != ' ' && i < 255) src[i++] = *args++;
+    src[i] = '\0';
+    if (*args == ' ') args++;
+    i = 0;
+    while (*args && i < 255) dst[i++] = *args++;
+    dst[i] = '\0';
+
+    if (!src[0] || !dst[0]) {
+        char err[] = "Usage: copy <src> <dst>";
+        user_print_line(err, line++);
+    } else {
+        int r = fs_copy(src, dst);
+        if (r == 0) {
+            char done[] = "Copied.";
+            user_print_line(done, line++);
+        } else {
+            char fail[] = "Error: copy failed.";
+            user_print_line(fail, line++);
+        }
+    }
+
+    shell_resume_line = line;
+    kill_process(get_pid());
+    while (1);
 }

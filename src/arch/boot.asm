@@ -2,7 +2,7 @@ bits 16
 SECTION .text.stage1
 stage1_start:
     mov ah, 0x02       ; BIOS read disk function
-    mov al, 0x63       ; Read 99 sectors.
+    mov al, 0x77       ; Read 119 sectors.
     mov cl, 0x02       ; Start at sector 2.
     mov ch, 0x00       ; Cylinder 0
     mov dh, 0x00       ; Head 0
