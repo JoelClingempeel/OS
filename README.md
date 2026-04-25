@@ -33,7 +33,7 @@ This is a hobby text-based operating system.
 
 ```
 src
-├── arch     # bootloader and interrupt handling
+├── arch     # bootloader, interrupts, and linker script
 ├── include  # header files
 ├── kernel   # scheduler, memory, filesystem, syscalls
 ├── user     # shell, editor, interpreter, user programs
