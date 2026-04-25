@@ -7,29 +7,32 @@ int shell_start_line = 0;
 
 
 void blinky() {
+    uint8_t bg_bytes = TEXT_FORMAT_BYTE & 0xF0;
     while (1) {
         delay(50);
-        put_char('N', 0x0c, 0x350);  // Red
+        put_char('N', 0x0c | bg_bytes, 0x350);  // Red
         delay(50);
-        put_char(0, 0x0c, 0x350);
+        put_char(0, 0x0c | bg_bytes, 0x350);
     }
 }
 
 void blinky2() {
+    uint8_t bg_bytes = TEXT_FORMAT_BYTE & 0xF0;
     while (1) {
         delay(50);
-        put_char('Q', 0x0b, 0x700);  // Cyan
+        put_char('Q', 0x0b | bg_bytes, 0x700);  // Cyan
         delay(50);
-        put_char(0, 0x0b, 0x700);
+        put_char(0, 0x0b | bg_bytes, 0x700);
     }
 }
 
 void blinky3() {
+    uint8_t bg_bytes = TEXT_FORMAT_BYTE & 0xF0;
     while (1) {
         delay(50);
-        put_char('Y', 0x0a, 0x100);  // Green
+        put_char('Y', 0x0a | bg_bytes, 0x100);  // Green
         delay(50);
-        put_char(0, 0x0a, 0x100);
+        put_char(0, 0x0a | bg_bytes, 0x100);
     }
 }
 
